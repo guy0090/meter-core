@@ -1,4 +1,4 @@
-import "./chunk-DAY5DOC4.mjs";
+import "./chunk-PVHFFDPG.mjs";
 
 // src/legacy-logger.ts
 import { createHash } from "crypto";
@@ -296,6 +296,18 @@ var LegacyLogger = class extends TypedEmitter {
       }
     }).on("PKTStatChangeOriginNotify", (pkt) => {
       if (this.#needEmit) {
+        const parsed = pkt.parsed;
+        if (!parsed)
+          return;
+        const currentStatsMap = this.#getStatPairMap(pkt.parsed.StatPairList);
+        const changedStatsMap = this.#getStatPairMap(pkt.parsed.Unk1);
+        this.#buildLine(
+          9 /* Heal */,
+          parsed.ObjectId,
+          this.#getEntityName(parsed.ObjectId),
+          Number(changedStatsMap.get(1 /* hp */)) || 0,
+          Number(currentStatsMap.get(1 /* hp */)) || 0
+        );
       }
     }).on("PKTStatusEffectAddNotify", (pkt) => {
     }).on("PKTStatusEffectRemoveNotify", (pkt) => {

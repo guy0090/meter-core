@@ -1,6 +1,6 @@
 import cap from 'cap';
 import { TypedEmitter } from 'tiny-typed-emitter';
-import { T as TCPTracker, L as ListenOptions } from './ip_tracker-6ab29a13.js';
+import { T as TCPTracker, L as ListenOptions } from './ip_tracker-6e43aa7a.js';
 import 'stream';
 
 declare const findDevice: typeof cap.Cap.findDevice;
@@ -30,8 +30,7 @@ interface PktCaptureAllEvents {
     packet: (buf: Buffer, deviceName: string) => void;
 }
 declare enum PktCaptureMode {
-    MODE_PCAP = 0,
-    MODE_RAW_SOCKET = 1
+    MODE_PCAP = 0
 }
 declare class PktCaptureAll extends TypedEmitter<PktCaptureAllEvents> {
     captures: Map<string, PktCapture>;

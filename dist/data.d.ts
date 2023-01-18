@@ -1,17 +1,17 @@
-type Npc = {
+declare type Npc = {
     id: number;
     name: string;
     grade: string;
     type: string;
 };
-type Skill = {
+declare type Skill = {
     id: number;
     name: string;
     desc: string;
     classid: number;
     icon: number;
 };
-type SkillBuff = {
+declare type SkillBuff = {
     id: number;
     name: string;
     desc: string;
@@ -19,7 +19,7 @@ type SkillBuff = {
     duration: number;
     overlapFlag: number;
 };
-type SkillEffect = {
+declare type SkillEffect = {
     id: number;
     comment: string;
     stagger: number;

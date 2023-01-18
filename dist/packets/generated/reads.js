@@ -47,19 +47,19 @@ __export(reads_exports, {
   PKTPassiveStatusEffectRemoveNotify: () => read43,
   PKTRaidBossKillNotify: () => read44,
   PKTRaidResult: () => read45,
-  PKTRemoveObject: () => read46,
-  PKTSkillDamageAbnormalMoveNotify: () => read50,
-  PKTSkillDamageNotify: () => read51,
-  PKTSkillStageNotify: () => read52,
-  PKTSkillStartNotify: () => read54,
-  PKTStatChangeOriginNotify: () => read55,
-  PKTStatusEffectAddNotify: () => read56,
-  PKTStatusEffectRemoveNotify: () => read57,
-  PKTStatusEffectSyncDataNotify: () => read58,
-  PKTTriggerBossBattleStatus: () => read59,
-  PKTTriggerFinishNotify: () => read60,
-  PKTTriggerStartNotify: () => read61,
-  PKTTroopMemberUpdateMinNotify: () => read62
+  PKTRemoveObject: () => read47,
+  PKTSkillDamageAbnormalMoveNotify: () => read51,
+  PKTSkillDamageNotify: () => read52,
+  PKTSkillStageNotify: () => read53,
+  PKTSkillStartNotify: () => read55,
+  PKTStatChangeOriginNotify: () => read56,
+  PKTStatusEffectAddNotify: () => read57,
+  PKTStatusEffectRemoveNotify: () => read58,
+  PKTStatusEffectSyncDataNotify: () => read59,
+  PKTTriggerBossBattleStatus: () => read60,
+  PKTTriggerFinishNotify: () => read61,
+  PKTTriggerStartNotify: () => read62,
+  PKTTroopMemberUpdateMinNotify: () => read63
 });
 module.exports = __toCommonJS(reads_exports);
 
@@ -147,8 +147,8 @@ var Read = class {
 // src/packets/generated/structures/AbilityData.ts
 function read(reader) {
   const data = {};
-  data.Points = reader.u16();
   data.Id = reader.u32();
+  data.Points = reader.u16();
   data.Level = reader.u8();
   return data;
 }
@@ -182,15 +182,15 @@ function read4(buf) {
 function read5(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.struct_120 = reader.bytes(reader.u16(), 200, 4);
   data.ObjectId = reader.u64();
+  data.struct_120 = reader.bytes(reader.u16(), 200, 4);
   data.addonSkillFeatureList = reader.array(
     reader.u16(),
     () => {
-      const c = {};
-      c.addonSkillFeatureIdList = reader.array(reader.u16(), () => reader.u32(), 5);
-      c.SkillId = reader.u32();
-      return c;
+      const P = {};
+      P.addonSkillFeatureIdList = reader.array(reader.u16(), () => reader.u32(), 5);
+      P.SkillId = reader.u32();
+      return P;
     },
     200
   );
@@ -210,12 +210,12 @@ function read6(buf) {
 function read7(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.ObjectId = reader.u64();
-  data.ParalyzationPoint = reader.u32();
-  reader.skip(1);
-  data.Type = reader.u8();
-  data.ParalyzationMaxPoint = reader.u32();
   reader.skip(2);
+  data.ParalyzationPoint = reader.u32();
+  data.ParalyzationMaxPoint = reader.u32();
+  data.Type = reader.u8();
+  data.ObjectId = reader.u64();
+  reader.skip(1);
   return data;
 }
 
@@ -224,9 +224,9 @@ function read8(buf) {
   const reader = new Read(buf);
   const data = {};
   reader.skip(2);
-  data.SourceId = reader.u64();
   data.TargetId = reader.u64();
   data.Type = reader.u32();
+  data.SourceId = reader.u64();
   return data;
 }
 
@@ -234,19 +234,18 @@ function read8(buf) {
 function read9(buf) {
   const reader = new Read(buf);
   const data = {};
-  if (reader.bool())
-    data.Unk0_0 = reader.u8();
-  data.Unk1 = reader.u32();
-  data.Unk2 = reader.u32();
-  data.Unk3 = reader.u64();
-  data.Unk4 = reader.u16();
-  if (reader.bool())
-    data.Unk5_0 = reader.u8();
-  data.Unk6 = reader.u8();
+  data.Unk0 = reader.u32();
   data.SourceId = reader.u64();
-  data.TargetId = reader.u64();
   if (reader.bool())
-    data.Unk9_0 = reader.u8();
+    data.Unk2_0 = reader.u8();
+  data.Unk3 = reader.u8();
+  if (reader.bool())
+    data.Unk4_0 = reader.u8();
+  data.TargetId = reader.u64();
+  data.Unk6 = reader.u64();
+  data.Unk7 = reader.u16();
+  if (reader.bool())
+    data.Unk8_0 = reader.u8();
   return data;
 }
 
@@ -254,7 +253,7 @@ function read9(buf) {
 function read10(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.struct_125 = reader.bytes(reader.u16(), 346, 48);
+  data.struct_124 = reader.bytes(reader.u16(), 346, 48);
   data.abilityDataList = reader.array(reader.u16(), () => read(reader), 100);
   return data;
 }
@@ -309,43 +308,24 @@ function read11(reader) {
 function read12(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.Unk0 = reader.u32();
-  data.Unk1 = reader.u64();
-  data.Unk2 = reader.u32();
-  data.struct_542 = reader.string(128);
+  data.Unk0 = reader.u8();
   data.PlayerId = reader.u64();
   data.lostArkDateTime = read11(reader);
-  data.Unk6 = reader.u8();
-  data.struct_27 = reader.array(
+  data.Unk3 = reader.u32();
+  data.Unk4 = reader.u32();
+  data.Unk5 = reader.u64();
+  data.struct_544 = reader.string(128);
+  data.struct_26 = reader.array(
     reader.u16(),
     () => {
-      const g = {};
-      g.struct_530 = reader.string(32);
-      g.versionString = reader.string(64);
-      g.struct_542 = reader.string(128);
-      return g;
+      const T = {};
+      T.struct_544 = reader.string(128);
+      T.versionString = reader.string(64);
+      T.struct_531 = reader.string(32);
+      return T;
     },
     64
   );
-  return data;
-}
-
-// src/packets/generated/structures/StatusEffectData.ts
-function read13(reader) {
-  const data = {};
-  if (reader.bool())
-    data.Unk0_0 = reader.u64();
-  data.SkillLevel = reader.u8();
-  if (reader.bool())
-    data.Value = reader.bytes(16);
-  data.lostArkDateTime = read11(reader);
-  data.StatusEffectId = reader.u32();
-  data.struct_423 = reader.bytes(reader.u16(), 8, 7);
-  data.EffectInstanceId = reader.u32();
-  data.SourceId = reader.u64();
-  data.Unk8 = reader.u32();
-  data.Unk9 = reader.u8();
-  data.InstanceId = reader.u64();
   return data;
 }
 
@@ -359,23 +339,42 @@ function bytesToInt64(value) {
   value.copy(buf);
   return buf.readBigInt64LE();
 }
-function read14(reader) {
+function read13(reader) {
   const flag = reader.u8();
   const bytes = reader.bytes(flag >> 1 & 7);
   const result = bytesToInt64(bytes) << 4n | BigInt(flag >> 4);
   return (flag & 1) === 0 ? result : -result;
 }
 
-// src/packets/generated/structures/Struct_674.ts
+// src/packets/generated/structures/StatusEffectData.ts
+function read14(reader) {
+  const data = {};
+  data.SourceId = reader.u64();
+  data.Unk1 = reader.u32();
+  data.Unk2 = reader.u8();
+  data.lostArkDateTime = read11(reader);
+  data.SkillLevel = reader.u8();
+  data.StatusEffectId = reader.u32();
+  data.struct_420 = reader.bytes(reader.u16(), 8, 7);
+  data.InstanceId = reader.u64();
+  if (reader.bool())
+    data.Value = reader.bytes(16);
+  if (reader.bool())
+    data.Unk9_0 = reader.u64();
+  data.EffectInstanceId = reader.u32();
+  return data;
+}
+
+// src/packets/generated/structures/Struct_678.ts
 function read15(reader) {
   const data = {};
-  data.Unk0 = reader.u8();
-  data.Unk1 = read14(reader);
+  data.Unk0 = reader.u64();
+  data.Unk1 = read13(reader);
   data.Unk2 = reader.u8();
-  data.Unk3 = reader.u8();
-  data.Unk4 = reader.u16();
-  data.Unk5 = read14(reader);
-  data.Unk6 = reader.u64();
+  data.Unk3 = reader.u16();
+  data.Unk4 = read13(reader);
+  data.Unk5 = reader.u8();
+  data.Unk6 = reader.u8();
   return data;
 }
 
@@ -383,87 +382,87 @@ function read15(reader) {
 function read16(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.statusEffectDatas = reader.array(reader.u16(), () => read13(reader), 80);
-  data.Unk1 = reader.u8();
-  data.Unk2 = reader.u8();
-  data.Unk3 = reader.u32();
-  data.GearLevel = reader.u32();
+  data.Unk0 = reader.bytes(25);
+  data.Unk1 = reader.u16();
+  data.Unk2 = reader.u32();
+  data.ClassId = reader.u16();
+  data.Unk4 = reader.u64();
   data.Unk5 = reader.u32();
   data.Unk6 = reader.u8();
-  data.Name = reader.string(20);
-  data.Unk8 = reader.u8();
-  data.Unk9 = reader.u8();
-  data.Unk10 = reader.u32();
-  data.Unk11 = reader.u16();
-  data.Unk12 = reader.bytes(35);
-  data.Unk13 = reader.u8();
-  data.Unk14 = reader.u32();
-  data.Unk15 = reader.u64();
-  data.struct_372 = reader.array(reader.u16(), () => read15(reader), 5);
-  data.Unk17 = reader.u32();
-  data.Unk18 = reader.u8();
-  data.Unk19 = reader.u32();
-  data.Unk20 = reader.u32();
-  data.Unk21 = reader.u8();
-  data.Unk22 = reader.u32();
-  if (reader.bool())
-    data.Unk23_0 = reader.u32();
-  data.struct_93 = reader.bytes(reader.u16(), 57);
-  data.Unk25 = reader.u8();
-  data.Unk26 = reader.u8();
-  data.Unk27 = reader.u8();
-  data.Unk28 = reader.u64();
-  data.struct_218 = reader.bytes(reader.u16(), 3, 17);
-  data.CharacterId = reader.u64();
-  data.Unk31 = reader.u8();
-  data.Unk32 = reader.u8();
-  data.Unk33 = reader.u16();
-  data.Unk34 = reader.u8();
-  data.Unk35 = reader.u8();
-  data.Unk36 = reader.u8();
-  data.Unk37 = reader.u8();
-  data.PlayerId = reader.u64();
-  data.Unk39 = reader.u32();
-  data.Unk40 = reader.u16();
+  data.Unk7 = reader.u16();
+  data.Unk8 = reader.u16();
+  reader.skip(66);
+  data.Level = reader.u16();
+  reader.skip(44);
   data.statPair = reader.array(
     reader.u16(),
     () => {
-      const j = {};
-      j.StatType = reader.u8();
-      j.Value = read14(reader);
-      return j;
+      const U = {};
+      U.Value = read13(reader);
+      U.StatType = reader.u8();
+      return U;
     },
     152
   );
+  data.Unk11 = reader.u32();
+  data.Unk12 = reader.u8();
+  data.Unk13 = reader.u16();
+  data.Unk14 = reader.u32();
+  data.Unk15 = reader.u8();
+  data.statusEffectDatas = reader.array(reader.u16(), () => read14(reader), 80);
+  data.Unk17 = reader.u8();
+  data.struct_320 = reader.bytes(reader.u16(), 104, 30);
+  data.Unk19 = reader.u64();
+  data.Unk20 = reader.u32();
+  data.Unk21 = reader.u8();
+  data.Unk22 = reader.u8();
+  data.Unk23 = reader.u32();
+  data.Unk24 = reader.u8();
+  data.Unk25 = reader.u32();
+  data.Unk26 = reader.u8();
+  data.Unk27 = reader.u8();
+  data.PlayerId = reader.u64();
+  data.Unk29 = reader.u16();
+  data.Name = reader.string(20);
+  data.Unk31 = reader.u8();
+  data.Unk32 = reader.u32();
+  data.Unk33 = reader.u8();
+  data.struct_368 = reader.array(reader.u16(), () => read15(reader), 5);
+  data.Unk35 = reader.u8();
+  if (reader.bool())
+    data.Unk36_0 = reader.u32();
+  data.Unk37 = reader.u32();
+  data.Unk38 = reader.u8();
+  data.Unk39 = reader.u64();
+  data.CharacterId = reader.u64();
+  data.struct_343 = reader.string(7);
   data.Unk42 = reader.u8();
-  data.struct_323 = reader.bytes(reader.u16(), 104, 30);
-  data.Unk44 = reader.u64();
-  data.Unk45 = reader.u32();
-  data.Unk46 = reader.u32();
-  data.Unk47 = reader.bytes(25);
+  data.Unk43 = reader.u8();
+  data.Unk44 = reader.u32();
+  data.struct_217 = reader.bytes(reader.u16(), 3, 17);
+  data.Unk46 = reader.u64();
+  data.Unk47 = reader.u8();
   data.Unk48 = reader.u8();
-  reader.skip(79);
-  data.Level = reader.u16();
-  reader.skip(31);
-  data.Unk50 = reader.u64();
-  data.struct_349 = reader.string(7);
-  data.ClassId = reader.u16();
-  data.Unk53 = reader.u16();
+  data.Unk49 = reader.u32();
+  data.GearLevel = reader.u32();
+  data.Unk51 = reader.u8();
+  data.struct_92 = reader.bytes(reader.u16(), 57);
+  data.Unk53 = reader.bytes(35);
   data.Unk54 = reader.u8();
-  data.Unk55 = reader.u16();
+  data.Unk55 = reader.u8();
   data.Unk56 = reader.u32();
   return data;
 }
 
-// src/packets/generated/structures/Struct_691.ts
+// src/packets/generated/structures/Struct_695.ts
 function read17(reader) {
   const data = {};
-  if (reader.bool())
-    data.Unk0_0 = reader.bytes(9);
+  data.Unk0 = reader.u32();
   data.Unk1 = reader.u32();
   if (reader.bool())
-    data.Unk2_0 = reader.u32();
-  data.Unk3 = reader.u32();
+    data.Unk2_0 = reader.bytes(9);
+  if (reader.bool())
+    data.Unk3_0 = reader.u32();
   data.Unk4 = reader.u32();
   return data;
 }
@@ -472,68 +471,68 @@ function read17(reader) {
 function read18(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.addonSkillFeatureList = reader.array(
-    reader.u16(),
-    () => {
-      const k = {};
-      k.addonSkillFeatureIdList = reader.array(reader.u16(), () => reader.u32(), 5);
-      k.SkillId = reader.u32();
-      return k;
-    },
-    200
-  );
-  if (reader.bool())
-    data.Unk1_0 = reader.u32();
-  data.struct_323 = reader.bytes(reader.u16(), 104, 30);
-  data.Unk3 = reader.u8();
-  data.statusEffectDatas = reader.array(reader.u16(), () => read13(reader), 80);
-  data.Unk5 = reader.u64();
-  data.struct_125 = reader.bytes(reader.u16(), 346, 48);
-  data.Unk7 = reader.u8();
-  data.Unk8 = reader.u8();
-  data.Unk9 = reader.u64();
-  data.struct_218 = reader.bytes(reader.u16(), 3, 17);
-  data.struct_120 = reader.bytes(reader.u16(), 200, 4);
-  data.Unk12 = reader.u32();
-  data.struct_403 = reader.array(reader.u16(), () => read17(reader), 300);
-  data.abilityDataList = reader.array(reader.u16(), () => read(reader), 100);
   data.statPair = reader.array(
     reader.u16(),
     () => {
-      const q = {};
-      q.StatType = reader.u8();
-      q.Value = read14(reader);
-      return q;
+      const X = {};
+      X.Value = read13(reader);
+      X.StatType = reader.u8();
+      return X;
     },
     152
   );
+  data.abilityDataList = reader.array(reader.u16(), () => read(reader), 100);
+  data.struct_124 = reader.bytes(reader.u16(), 346, 48);
+  data.Unk3 = reader.u8();
+  data.statusEffectDatas = reader.array(reader.u16(), () => read14(reader), 80);
+  data.struct_399 = reader.array(reader.u16(), () => read17(reader), 300);
+  data.struct_120 = reader.bytes(reader.u16(), 200, 4);
+  data.addonSkillFeatureList = reader.array(
+    reader.u16(),
+    () => {
+      const $ = {};
+      $.addonSkillFeatureIdList = reader.array(reader.u16(), () => reader.u32(), 5);
+      $.SkillId = reader.u32();
+      return $;
+    },
+    200
+  );
+  data.struct_320 = reader.bytes(reader.u16(), 104, 30);
+  data.Unk9 = reader.u32();
+  data.struct_217 = reader.bytes(reader.u16(), 3, 17);
+  data.Unk11 = reader.u64();
+  data.Unk12 = reader.u8();
+  if (reader.bool())
+    data.Unk13_0 = reader.u32();
+  data.Unk14 = reader.u64();
+  data.Unk15 = reader.u8();
   return data;
 }
 
-// src/packets/generated/structures/Struct_636.ts
+// src/packets/generated/structures/Struct_637.ts
 function read19(reader) {
   const data = {};
-  if (reader.bool())
-    data.Unk0_0 = reader.u8();
-  data.Unk1 = reader.u16();
+  data.Unk0 = reader.u16();
+  data.Unk1 = reader.u32();
+  data.Unk2 = reader.u16();
   data.lostArkDateTime = read11(reader);
-  data.struct_429 = reader.bytes(reader.u16(), 3, 14);
-  data.Unk4 = reader.u32();
-  data.Unk5 = reader.u16();
+  if (reader.bool())
+    data.Unk4_0 = reader.u8();
+  data.struct_426 = reader.bytes(reader.u16(), 3, 14);
   return data;
 }
 
-// src/packets/generated/structures/Struct_671.ts
+// src/packets/generated/structures/Struct_675.ts
 function read20(reader) {
   const data = {};
-  data.Unk0 = reader.u8();
-  data.struct_300 = reader.array(reader.u16(), () => read19(reader), 30);
-  data.Unk2 = reader.u8();
-  data.Unk3 = reader.u8();
-  data.Unk4 = reader.u16();
+  data.Unk0 = reader.u16();
+  data.Unk1 = reader.u8();
+  data.Unk2 = reader.u64();
+  data.struct_85 = reader.bytes(reader.u32(), 512);
   data.lostArkString = reader.string(20);
-  data.struct_86 = reader.bytes(reader.u32(), 512);
-  data.Unk7 = reader.u64();
+  data.struct_298 = reader.array(reader.u16(), () => read19(reader), 30);
+  data.Unk6 = reader.u8();
+  data.Unk7 = reader.u8();
   return data;
 }
 
@@ -561,65 +560,65 @@ function read22(reader) {
 function read23(reader) {
   const data = {};
   if (reader.bool())
-    data.Unk0_0 = reader.u8();
+    data.struct_675 = read20(reader);
   if (reader.bool())
-    data.Unk1_0 = reader.u16();
+    data.TransitIndex = reader.u32();
   data.Unk2 = reader.u8();
   if (reader.bool())
-    data.struct_253 = reader.bytes(reader.u16(), 12, 12);
-  data.struct_372 = reader.array(reader.u16(), () => read15(reader), 5);
+    data.struct_315 = reader.bytes(reader.u16(), 11, 9);
+  data.ObjectId = reader.u64();
   data.SpawnIndex = reader.i32();
-  if (reader.bool())
-    data.Unk6_0 = reader.u32();
+  data.statusEffectDatas = reader.array(reader.u16(), () => read14(reader), 80);
   data.Unk7 = reader.u8();
-  data.statPair = reader.array(
-    reader.u16(),
-    () => {
-      const w = {};
-      w.StatType = reader.u8();
-      w.Value = read14(reader);
-      return w;
-    },
-    152
-  );
-  if (reader.bool())
-    data.Unk9_0 = reader.u16();
-  if (reader.bool())
-    data.struct_318 = reader.bytes(reader.u16(), 11, 9);
-  if (reader.bool())
-    data.Unk11_0 = reader.u8();
-  if (reader.bool())
-    data.struct_671 = read20(reader);
-  if (reader.bool())
-    data.Unk13_0 = reader.u8();
-  data.statusEffectDatas = reader.array(reader.u16(), () => read13(reader), 80);
-  if (reader.bool())
-    data.Unk15_0 = reader.u32();
-  data.Unk16 = reader.u8();
   data.Position = read21(reader);
   if (reader.bool())
-    data.Unk18_0 = reader.u64();
+    data.Unk9_0 = reader.u32();
+  data.Unk10 = reader.u8();
+  if (reader.bool())
+    data.Unk11_0 = reader.u32();
+  if (reader.bool())
+    data.struct_254 = reader.bytes(reader.u16(), 12, 12);
+  data.Unk13 = reader.u8();
+  data.Unk14 = reader.u16();
+  data.TypeId = reader.u32();
+  if (reader.bool())
+    data.Unk16_0 = reader.u16();
+  if (reader.bool())
+    data.Unk17_0 = reader.u32();
+  data.DirectionYaw = read22(reader);
   if (reader.bool())
     data.Unk19_0 = reader.u8();
   if (reader.bool())
     data.Unk20_0 = reader.u8();
-  data.Unk21 = reader.u8();
   if (reader.bool())
-    data.Unk22_0 = reader.u8();
-  data.Unk23 = reader.u8();
+    data.Unk21_0 = reader.u8();
+  data.Unk22 = reader.u8();
   if (reader.bool())
-    data.Unk24_0 = reader.u32();
+    data.Unk23_0 = reader.u8();
+  data.statPair = reader.array(
+    reader.u16(),
+    () => {
+      const h = {};
+      h.Value = read13(reader);
+      h.StatType = reader.u8();
+      return h;
+    },
+    152
+  );
   if (reader.bool())
-    data.TransitIndex = reader.u32();
-  data.Unk26 = reader.u8();
+    data.Unk25_0 = reader.u64();
   if (reader.bool())
-    data.Unk27_0 = reader.u32();
-  data.DirectionYaw = read22(reader);
+    data.Unk26_0 = reader.u16();
   if (reader.bool())
-    data.Unk29_0 = reader.u8();
-  data.Unk30 = reader.u16();
-  data.ObjectId = reader.u64();
-  data.TypeId = reader.u32();
+    data.Unk27_0 = reader.u8();
+  data.Unk28 = reader.u8();
+  if (reader.bool())
+    data.Unk29_0 = reader.u32();
+  if (reader.bool())
+    data.Unk30_0 = reader.u8();
+  data.struct_368 = reader.array(reader.u16(), () => read15(reader), 5);
+  if (reader.bool())
+    data.Unk32_0 = reader.u8();
   return data;
 }
 
@@ -627,16 +626,12 @@ function read23(reader) {
 function read24(buf) {
   const reader = new Read(buf);
   const data = {};
+  if (reader.bool())
+    data.Unk0_0 = reader.u8();
+  if (reader.bool())
+    data.Unk1_0 = reader.u64();
   data.NpcStruct = read23(reader);
-  data.Unk1 = reader.u8();
-  if (reader.bool())
-    data.Unk2_0 = reader.u64();
-  if (reader.bool())
-    data.Unk3_0 = reader.u8();
-  if (reader.bool()) {
-    data.Unk0_0 = reader.string(20);
-    data.Unk0_1 = reader.string(20);
-  }
+  data.Unk3 = reader.u8();
   return data;
 }
 
@@ -644,91 +639,91 @@ function read24(buf) {
 function read25(buf) {
   const reader = new Read(buf);
   const data = {};
-  reader.skip(5);
-  data.OwnerId = reader.u64();
-  reader.skip(26);
   data.PublishReason = reader.u8();
+  reader.skip(9);
+  data.OwnerId = reader.u64();
+  reader.skip(22);
   data.NpcData = read23(reader);
   return data;
 }
 
-// src/packets/generated/structures/PCStruct.ts
+// src/packets/generated/structures/TrackMoveInfo.ts
 function read26(reader) {
   const data = {};
-  data.Unk0 = reader.u8();
-  data.Unk1 = reader.u8();
-  data.Unk5_m = reader.u32();
+  data.Unk0 = reader.u32();
+  data.Unk1 = reader.u32();
+  data.Unk2 = reader.bytes(12);
   if (reader.bool())
     data.Unk3_0 = reader.bytes(12);
-  data.Unk4 = reader.u16();
-  data.struct_300 = reader.array(reader.u16(), () => read19(reader), 30);
-  data.Unk6 = reader.bytes(25);
-  data.statPair = reader.array(
-    reader.u16(),
-    () => {
-      const A = {};
-      A.StatType = reader.u8();
-      A.Value = read14(reader);
-      return A;
-    },
-    152
-  );
-  data.Name = reader.string(20);
-  data.CharacterId = reader.u64();
-  data.Unk10 = reader.u16();
-  data.Unk11 = reader.bytes(5);
-  data.struct_120 = reader.bytes(reader.u16(), 200, 4);
-  data.Heading = read22(reader);
-  data.Unk14 = reader.u8();
-  data.Unk15 = reader.u32();
-  data.Unk16 = reader.u8();
-  data.struct_299 = reader.array(reader.u16(), () => read19(reader), 9);
-  data.ClassId = reader.u16();
-  data.Unk19 = reader.u32();
-  data.Unk20 = reader.string(20);
-  data.Unk21 = reader.u32();
-  data.Unk22 = reader.u8();
-  data.PlayerId = reader.u64();
-  data.Unk24 = reader.u32();
-  data.Unk25 = reader.u8();
-  data.addonSkillFeatureList = reader.array(
-    reader.u16(),
-    () => {
-      const C = {};
-      C.addonSkillFeatureIdList = reader.array(reader.u16(), () => reader.u32(), 5);
-      C.SkillId = reader.u32();
-      return C;
-    },
-    200
-  );
-  data.Unk27 = reader.u32();
-  data.Unk28 = reader.u8();
-  data.statusEffectDatas = reader.array(reader.u16(), () => read13(reader), 80);
-  data.Unk30 = reader.u8();
-  data.Unk31 = reader.u32();
-  data.Unk32 = reader.u8();
-  data.GearLevel = reader.u32();
-  data.Unk34 = reader.u64();
-  data.Unk35 = reader.u8();
-  data.Unk36 = reader.u16();
-  data.Unk37 = reader.u8();
-  data.struct_86 = reader.bytes(reader.u32(), 512);
-  data.struct_372 = reader.array(reader.u16(), () => read15(reader), 5);
-  data.Level = reader.u16();
-  data.Unk41 = reader.u32();
-  data.Unk42 = reader.u8();
-  data.Unk43 = reader.u32();
   return data;
 }
 
-// src/packets/generated/structures/TrackMoveInfo.ts
+// src/packets/generated/structures/PCStruct.ts
 function read27(reader) {
   const data = {};
-  data.Unk0 = reader.u32();
-  data.Unk1 = reader.bytes(12);
-  data.Unk2 = reader.u32();
+  data.Unk0 = reader.string(20);
+  data.Unk1 = reader.u16();
+  data.Unk2 = reader.u8();
+  data.Unk3 = reader.u32();
+  data.Unk5_m = reader.u32();
   if (reader.bool())
-    data.Unk3_0 = reader.bytes(12);
+    data.Unk5_0 = reader.bytes(12);
+  data.Unk6 = reader.u8();
+  data.struct_368 = reader.array(reader.u16(), () => read15(reader), 5);
+  data.struct_298 = reader.array(reader.u16(), () => read19(reader), 30);
+  data.Unk9 = reader.u8();
+  data.Unk10 = reader.u16();
+  data.GearLevel = reader.u32();
+  data.addonSkillFeatureList = reader.array(
+    reader.u16(),
+    () => {
+      const m = {};
+      m.addonSkillFeatureIdList = reader.array(reader.u16(), () => reader.u32(), 5);
+      m.SkillId = reader.u32();
+      return m;
+    },
+    200
+  );
+  data.Unk13 = reader.u8();
+  data.Unk14 = reader.u8();
+  data.Unk15 = reader.u8();
+  data.Unk16 = reader.u32();
+  data.Unk17 = reader.u8();
+  data.Level = reader.u16();
+  data.struct_85 = reader.bytes(reader.u32(), 512);
+  data.Unk20 = reader.u8();
+  data.Unk21 = reader.u8();
+  data.Unk22 = reader.u32();
+  data.Heading = read22(reader);
+  data.Unk24 = reader.u64();
+  data.Unk25 = reader.u8();
+  data.CharacterId = reader.u64();
+  data.struct_297 = reader.array(reader.u16(), () => read19(reader), 9);
+  data.Unk28 = reader.u32();
+  data.Unk29 = reader.u8();
+  data.struct_120 = reader.bytes(reader.u16(), 200, 4);
+  data.ClassId = reader.u16();
+  data.Unk32 = reader.u32();
+  data.Unk33 = reader.bytes(5);
+  data.Name = reader.string(20);
+  data.Unk35 = reader.u32();
+  data.Unk36 = reader.u32();
+  data.statPair = reader.array(
+    reader.u16(),
+    () => {
+      const q = {};
+      q.Value = read13(reader);
+      q.StatType = reader.u8();
+      return q;
+    },
+    152
+  );
+  data.Unk38 = reader.bytes(25);
+  data.Unk39 = reader.u8();
+  data.Unk40 = reader.u16();
+  data.Unk41 = reader.u32();
+  data.statusEffectDatas = reader.array(reader.u16(), () => read14(reader), 80);
+  data.PlayerId = reader.u64();
   return data;
 }
 
@@ -737,16 +732,16 @@ function read28(buf) {
   const reader = new Read(buf);
   const data = {};
   if (reader.bool())
+    data.TrackMoveInfo = read26(reader);
+  if (reader.bool())
     data.Unk5_0_m = reader.bytes(20);
-  if (reader.bool())
-    data.Unk4_0_m = reader.bytes(12);
   data.Unk2_m = reader.u8();
-  data.Unk0_m = reader.u8();
-  data.PCStruct = read26(reader);
-  if (reader.bool())
-    data.TrackMoveInfo = read27(reader);
   if (reader.bool())
     data.Unk3_0_m = reader.u32();
+  data.Unk0_m = reader.u8();
+  if (reader.bool())
+    data.Unk4_0_m = reader.bytes(12);
+  data.PCStruct = read27(reader);
   return data;
 }
 
@@ -771,30 +766,30 @@ function read30(reader) {
 // src/packets/generated/structures/ProjectileInfo.ts
 function read31(reader) {
   const data = {};
-  data.SkillEffect = reader.u32();
+  data.Unk0 = reader.u16();
   data.ProjectileId = reader.u64();
+  data.Unk2 = reader.u32();
+  data.Unk3 = reader.u8();
   if (reader.bool())
-    data.Unk2_0 = reader.u64();
+    data.Unk4_0 = reader.u32();
+  if (reader.bool())
+    data.struct_315 = reader.bytes(reader.u16(), 11, 9);
+  data.Unk6 = reader.u32();
+  data.Unk7 = reader.u32();
+  data.SkillEffect = reader.u32();
   data.tripodIndex = read29(reader);
-  data.Unk4 = reader.u32();
-  data.Unk5 = reader.u32();
-  data.Unk6 = reader.u8();
+  data.Unk10 = reader.u64();
+  data.Unk11 = reader.u32();
   data.SkillLevel = reader.u8();
-  data.Unk8 = reader.u64();
-  data.Unk9 = reader.u8();
-  data.OwnerId = reader.u64();
-  data.Unk11 = reader.u64();
-  data.Unk12 = reader.u64();
   data.tripodLevel = read30(reader);
-  data.Unk14 = reader.u16();
+  data.Unk14 = reader.u64();
+  data.Unk15 = reader.u8();
+  data.Unk16 = reader.u16();
   if (reader.bool())
-    data.Unk15_0 = reader.u32();
-  if (reader.bool())
-    data.struct_318 = reader.bytes(reader.u16(), 11, 9);
-  data.Unk17 = reader.u32();
+    data.Unk17_0 = reader.u64();
+  data.Unk18 = reader.u64();
   data.SkillId = reader.u32();
-  data.Unk19 = reader.u16();
-  data.Unk20 = reader.u32();
+  data.OwnerId = reader.u64();
   return data;
 }
 
@@ -810,41 +805,40 @@ function read32(buf) {
 function read33(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.HitCheckTime = reader.u32();
+  data.NoHitCheckTime = reader.u32();
   reader.skip(1);
   data.ParalyzationMaxPoint = reader.u32();
-  data.Enable = reader.bool();
   data.DecreasePoint = reader.u32();
-  reader.skip(1);
-  data.ObjectId = reader.u64();
+  data.Enable = reader.bool();
   data.ParalyzationPoint = reader.u32();
-  data.NoHitCheckTime = reader.u32();
+  data.HitCheckTime = reader.u32();
+  data.ObjectId = reader.u64();
   return data;
 }
 
 // src/packets/generated/structures/PartyMemberData.ts
 function read34(reader) {
   const data = {};
-  data.Unk0 = reader.u32();
-  data.Unk1 = read14(reader);
-  data.Unk2 = reader.u8();
-  data.Unk3 = reader.u8();
   data.CharacterLevel = reader.u16();
-  data.Unk5 = reader.u64();
-  data.Unk6 = reader.u8();
-  data.Unk7 = reader.u32();
-  data.Unk8 = reader.u8();
-  data.Unk9 = reader.u8();
-  data.Unk10 = reader.u16();
-  data.Unk11 = reader.u32();
-  data.Unk12 = reader.u8();
+  data.Unk1 = reader.u8();
+  data.Unk2 = reader.u64();
+  data.Unk3 = reader.u8();
+  data.Unk4 = reader.u32();
+  data.Unk5 = reader.u16();
+  data.Unk6 = read13(reader);
   data.Name = reader.string(20);
-  data.Unk14 = reader.u16();
-  data.CharacterId = reader.u64();
-  data.Unk16 = reader.u64();
-  data.Unk17 = read14(reader);
-  data.Unk18 = reader.u8();
   data.PartyMemberNumber = reader.u8();
+  data.Unk9 = reader.u64();
+  data.Unk10 = read13(reader);
+  data.CharacterId = reader.u64();
+  data.Unk12 = reader.u8();
+  data.Unk13 = reader.u8();
+  data.Unk14 = reader.u8();
+  data.Unk15 = reader.u8();
+  data.Unk16 = reader.u32();
+  data.Unk17 = reader.u32();
+  data.Unk18 = reader.u8();
+  data.Unk19 = reader.u16();
   return data;
 }
 
@@ -852,12 +846,12 @@ function read34(reader) {
 function read35(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.PartyLootType = reader.u8();
+  data.PartyInstanceId = reader.u32();
+  data.MemberDatas = reader.array(reader.u16(), () => read34(reader), 40);
+  data.PartyType = reader.u8();
   data.RaidInstanceId = reader.u32();
   data.LootGrade = reader.u32();
-  data.MemberDatas = reader.array(reader.u16(), () => read34(reader), 40);
-  data.PartyInstanceId = reader.u32();
-  data.PartyType = reader.u8();
+  data.PartyLootType = reader.u8();
   return data;
 }
 
@@ -865,8 +859,8 @@ function read35(buf) {
 function read36(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.Name = reader.string(20);
   data.PartyInstanceId = reader.u32();
+  data.Name = reader.string(20);
   data.PartyLeaveType = reader.u8();
   return data;
 }
@@ -894,11 +888,11 @@ function read38(buf) {
 function read39(buf) {
   const reader = new Read(buf);
   const data = {};
+  data.statusEffectDatas = reader.array(reader.u16(), () => read14(reader), 80);
   data.PlayerIdOnRefresh = reader.u64();
   data.CharacterId = reader.u64();
-  data.Unk2 = reader.u8();
   data.Unk3 = reader.u64();
-  data.statusEffectDatas = reader.array(reader.u16(), () => read13(reader), 80);
+  data.Unk4 = reader.u8();
   return data;
 }
 
@@ -906,10 +900,10 @@ function read39(buf) {
 function read40(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.Unk0 = reader.u8();
+  data.Unk0 = reader.u64();
+  data.Unk1 = reader.u8();
   data.CharacterId = reader.u64();
   data.statusEffectIds = reader.array(reader.u16(), () => reader.u32(), 80);
-  data.Unk3 = reader.u64();
   return data;
 }
 
@@ -917,12 +911,11 @@ function read40(buf) {
 function read41(buf) {
   const reader = new Read(buf);
   const data = {};
-  reader.skip(12);
-  data.RaidInstanceId = reader.u32();
-  reader.skip(13);
-  data.PartyInstanceId = reader.u32();
-  reader.skip(2);
   data.CharacterId = reader.u64();
+  reader.skip(1);
+  data.RaidInstanceId = reader.u32();
+  reader.skip(25);
+  data.PartyInstanceId = reader.u32();
   reader.skip(1);
   return data;
 }
@@ -947,7 +940,7 @@ function read43(buf) {
 function read44(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.Unk0 = reader.bytes(7);
+  data.Unk0 = reader.bytes(5);
   return data;
 }
 
@@ -955,126 +948,135 @@ function read44(buf) {
 function read45(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.Unk0 = reader.u64();
-  data.Unk1 = reader.u8();
+  data.Unk0 = reader.u8();
+  data.Unk1 = reader.u64();
   data.Unk2 = reader.u8();
   data.Unk3 = reader.u64();
-  data.struct_45 = reader.array(
+  data.Unk4 = reader.u8();
+  data.struct_44 = reader.array(
     reader.u16(),
     () => {
-      const O = {};
-      O.Unk0_0_0 = read14(reader);
-      O.Unk0_0_1 = read14(reader);
-      O.struct_495 = reader.bytes(reader.u16(), 3);
-      O.Unk0_0_3 = reader.u32();
-      return O;
+      const z = {};
+      z.struct_494 = reader.bytes(reader.u16(), 3);
+      z.Unk0_0_1 = read13(reader);
+      z.Unk0_0_2 = reader.u32();
+      z.Unk0_0_3 = read13(reader);
+      return z;
     },
     3
   );
-  data.Unk5 = reader.u8();
   data.Unk6 = reader.u64();
   data.Unk7 = reader.u64();
   return data;
 }
 
-// src/packets/generated/definitions/PKTRemoveObject.ts
-function read46(buf) {
-  const reader = new Read(buf);
+// src/packets/generated/structures/UnpublishObject.ts
+function read46(reader) {
   const data = {};
-  data.unpublishedObjects = reader.array(reader.u16(), () => reader.bytes(9), 200);
+  data.UnpublishReason = reader.u8();
+  data.ObjectId = reader.u64();
   return data;
 }
 
-// src/packets/common/SkillMoveOptionData.ts
-function read47(reader) {
+// src/packets/generated/definitions/PKTRemoveObject.ts
+function read47(buf) {
+  const reader = new Read(buf);
+  const data = {};
+  data.unpublishedObjects = reader.array(reader.u16(), () => read46(reader), 200);
+  return data;
+}
+
+// src/packets/common/MoveOptionData.ts
+function read48(reader) {
   const data = {};
   const flag = reader.u8();
   if (flag & 1)
-    data.MoveTime = reader.u32();
+    data.Mod = reader.u8();
   if (flag & 2)
-    data.StandUpTime = reader.u32();
+    data.Speed = reader.u32();
   if (flag & 4)
-    data.DownTime = reader.u32();
+    data.NextPos = reader.u64();
   if (flag & 8)
-    data.FreezeTime = reader.u32();
+    data.flag8 = reader.u32();
   if (flag & 16)
-    data.MoveHeight = reader.u32();
+    data.flag10 = reader.bytes(reader.u16(), 4);
   if (flag & 32)
-    data.FarmostDist = reader.u32();
+    data.flag20 = reader.bytes(reader.u16(), 5);
   if (flag & 64)
     data.flag40 = reader.bytes(reader.u16(), 6);
   return data;
 }
 
 // src/packets/generated/structures/SkillDamageEvent.ts
-function read48(reader) {
+function read49(reader) {
   const data = {};
-  data.Unk3_m = reader.i16();
-  data.CurHp = read14(reader);
-  data.Damage = read14(reader);
+  data.CurHp = read13(reader);
+  data.TargetId = reader.u64();
+  data.MaxHp = read13(reader);
   if (reader.bool())
     data.DamageAttr = reader.u8();
   data.DamageType = reader.u8();
+  data.Unk3_m = reader.i16();
   data.Modifier = reader.u8();
-  data.TargetId = reader.u64();
-  data.MaxHp = read14(reader);
+  data.Damage = read13(reader);
   return data;
 }
 
 // src/packets/generated/structures/SkillDamageAbnormalMoveEvent.ts
-function read49(reader) {
+function read50(reader) {
   const data = {};
-  data.Unk1_m = reader.u8();
-  data.Unk2_m = reader.u64();
-  data.SkillMoveOptionData = read47(reader);
-  data.Unk4_m = reader.u16();
+  data.Unk0_m = read48(reader);
   data.Unk8_m = reader.u16();
+  data.Unk2_m = reader.u64();
   data.Destination = read21(reader);
-  data.Unk3_m = reader.u16();
+  data.Unk4_m = reader.u16();
+  data.skillDamageEvent = read49(reader);
   data.Position = read21(reader);
-  data.skillDamageEvent = read48(reader);
+  data.Unk3_m = reader.u16();
+  data.Unk1_m = reader.u8();
   return data;
 }
 
 // src/packets/generated/definitions/PKTSkillDamageAbnormalMoveNotify.ts
-function read50(buf) {
+function read51(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.Unk1_m = reader.u8();
-  data.SourceId = reader.u64();
   data.Unk2_m = reader.u32();
-  data.SkillDamageAbnormalMoveEvents = reader.array(reader.u16(), () => read49(reader), 50);
-  data.SkillId = reader.u32();
+  data.SourceId = reader.u64();
+  data.Unk1_m = reader.u8();
+  data.SkillDamageAbnormalMoveEvents = reader.array(reader.u16(), () => read50(reader), 50);
   data.SkillEffectId = reader.u32();
+  data.SkillId = reader.u32();
   return data;
 }
 
 // src/packets/generated/definitions/PKTSkillDamageNotify.ts
-function read51(buf) {
+function read52(buf) {
   const reader = new Read(buf);
   const data = {};
+  data.SkillDamageEvents = reader.array(reader.u16(), () => read49(reader), 50);
   data.SkillId = reader.u32();
+  data.SourceId = reader.u64();
   data.SkillLevel = reader.u8();
   data.SkillEffectId = reader.u32();
-  data.SkillDamageEvents = reader.array(reader.u16(), () => read48(reader), 50);
-  data.SourceId = reader.u64();
   return data;
 }
 
 // src/packets/generated/definitions/PKTSkillStageNotify.ts
-function read52(buf) {
+function read53(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.SkillId = reader.u32();
+  reader.skip(29);
   data.SourceId = reader.u64();
-  reader.skip(33);
+  reader.skip(4);
   data.Stage = reader.u8();
-  reader.skip(6);
+  reader.skip(8);
+  data.SkillId = reader.u32();
   return data;
 }
 
 // src/packets/common/SkillOptionData.ts
-function read53(reader) {
+function read54(reader) {
   const data = {};
   const flag = reader.u8();
   if (flag & 1)
@@ -1095,137 +1097,138 @@ function read53(reader) {
 }
 
 // src/packets/generated/definitions/PKTSkillStartNotify.ts
-function read54(buf) {
+function read55(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.SourceId = reader.u64();
+  data.AimTargetPosition = read21(reader);
   data.CurPosition = read21(reader);
+  data.CurDirectionYaw = read22(reader);
+  if (reader.bool())
+    data.PitchRotation = read22(reader);
+  data.SkillId = reader.u32();
+  data.NewPosition = read21(reader);
+  data.SourceId = reader.u64();
   if (reader.bool())
     data.Unk1_m = reader.i32();
-  data.NewPosition = read21(reader);
-  data.CurDirectionYaw = read22(reader);
-  data.AimTargetPosition = read21(reader);
+  data.SkillOptionData = read54(reader);
   if (reader.bool())
     data.AiStateId = reader.u32();
   data.SkillLevel = reader.u8();
-  data.SkillId = reader.u32();
   data.NewDirectionYaw = read22(reader);
-  data.SkillOptionData = read53(reader);
-  if (reader.bool())
-    data.PitchRotation = read22(reader);
   return data;
 }
 
 // src/packets/generated/definitions/PKTStatChangeOriginNotify.ts
-function read55(buf) {
+function read56(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.ObjectId = reader.u64();
+  data.StatPairList = reader.array(
+    reader.u16(),
+    () => {
+      const D = {};
+      D.Value = read13(reader);
+      D.StatType = reader.u8();
+      return D;
+    },
+    152
+  );
+  data.Unk1 = reader.array(
+    reader.u16(),
+    () => {
+      const E = {};
+      E.Value = read13(reader);
+      E.StatType = reader.u8();
+      return E;
+    },
+    152
+  );
+  data.Unk2 = reader.u8();
   if (reader.bool())
-    data.Unk1_0 = reader.u32();
-  data.Unk2 = reader.array(
-    reader.u16(),
-    () => {
-      const S = {};
-      S.StatType = reader.u8();
-      S.Value = read14(reader);
-      return S;
-    },
-    152
-  );
-  data.Unk3 = reader.u8();
-  data.Unk4 = reader.array(
-    reader.u16(),
-    () => {
-      const T = {};
-      T.StatType = reader.u8();
-      T.Value = read14(reader);
-      return T;
-    },
-    152
-  );
+    data.Unk3_0 = reader.u32();
+  data.ObjectId = reader.u64();
   return data;
 }
 
 // src/packets/generated/definitions/PKTStatusEffectAddNotify.ts
-function read56(buf) {
+function read57(buf) {
   const reader = new Read(buf);
   const data = {};
   data.ObjectId = reader.u64();
   if (reader.bool())
     data.Unk1_0 = reader.u64();
-  data.Unk2 = reader.u64();
-  data.statusEffectData = read13(reader);
+  data.statusEffectData = read14(reader);
+  data.Unk3 = reader.u64();
   data.New = reader.bool();
   return data;
 }
 
 // src/packets/generated/definitions/PKTStatusEffectRemoveNotify.ts
-function read57(buf) {
+function read58(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.ObjectId = reader.u64();
-  data.Reason = reader.u8();
   data.statusEffectIds = reader.array(reader.u16(), () => reader.u32(), 80);
+  data.Reason = reader.u8();
+  data.ObjectId = reader.u64();
   return data;
 }
 
 // src/packets/generated/definitions/PKTStatusEffectSyncDataNotify.ts
-function read58(buf) {
+function read59(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.Value = reader.u32();
-  data.EffectInstanceId = reader.u32();
-  reader.skip(5);
   data.ObjectId = reader.u64();
+  reader.skip(1);
+  data.EffectInstanceId = reader.u32();
+  reader.skip(4);
+  data.Value = reader.u32();
   data.CharacterId = reader.u64();
-  reader.skip(2);
+  reader.skip(1);
   return data;
 }
 
 // src/packets/generated/definitions/PKTTriggerBossBattleStatus.ts
-function read59(buf) {
+function read60(buf) {
   const reader = new Read(buf);
   const data = {};
-  reader.skip(2);
-  data.Step = reader.u32();
   data.Unk2_m = reader.bool();
+  data.Step = reader.u32();
   data.TriggerId = reader.u32();
+  reader.skip(1);
   return data;
 }
 
 // src/packets/generated/definitions/PKTTriggerFinishNotify.ts
-function read60(buf) {
+function read61(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.InvolvedPCs = reader.array(reader.u16(), () => reader.u64(), 40);
-  data.PacketResultCode = reader.u32();
   data.TriggerId = reader.u32();
+  data.PacketResultCode = reader.u32();
   data.Unk0_m = reader.u32();
+  data.InvolvedPCs = reader.array(reader.u16(), () => reader.u64(), 40);
   return data;
 }
 
 // src/packets/generated/definitions/PKTTriggerStartNotify.ts
-function read61(buf) {
+function read62(buf) {
   const reader = new Read(buf);
   const data = {};
+  data.TriggerId = reader.u32();
+  data.InvolvedPCs = reader.array(reader.u16(), () => reader.u64(), 40);
   data.SourceId = reader.u64();
   data.TriggerSignalType = reader.u32();
-  data.InvolvedPCs = reader.array(reader.u16(), () => reader.u64(), 40);
-  data.TriggerId = reader.u32();
   return data;
 }
 
 // src/packets/generated/definitions/PKTTroopMemberUpdateMinNotify.ts
-function read62(buf) {
+function read63(buf) {
   const reader = new Read(buf);
   const data = {};
-  data.MaxHp = read14(reader);
-  data.statusEffectDatas = reader.array(reader.u16(), () => read13(reader), 80);
-  data.CharacterId = reader.u64();
   data.Unk0_m = reader.u32();
   data.Position = reader.u64();
-  data.CurHp = read14(reader);
+  data.CharacterId = reader.u64();
+  data.CurHp = read13(reader);
+  data.MaxHp = read13(reader);
+  data.statusEffectDatas = reader.array(reader.u16(), () => read14(reader), 80);
   return data;
 }
 // Annotate the CommonJS export names for ESM import in node:

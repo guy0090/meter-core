@@ -3,7 +3,7 @@ import { MeterData } from './data.js';
 import { PKTStream } from './pkt-stream.js';
 import './decompressor.js';
 import 'oodle';
-import './PKTTroopMemberUpdateMinNotify-4e0b7599.js';
+import './PKTTroopMemberUpdateMinNotify-401ffcf5.js';
 
 declare const enum LineId {
     InitEnv = 1,
@@ -40,7 +40,7 @@ interface LegacyLoggerEvents {
     [LineId.CounterAttack]: (id: bigint, name: string, targetId: bigint, targetName: string) => void;
     [LineId.Line15]: () => void;
 }
-type LegacyLoggerSettings = {
+declare type LegacyLoggerSettings = {
     emitText?: boolean;
     emitLines?: boolean;
     emitObjects?: boolean;

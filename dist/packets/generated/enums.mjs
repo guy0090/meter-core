@@ -7,7 +7,7 @@ import {
   npctype,
   stattype,
   triggersignaltype
-} from "../../chunk-DAY5DOC4.mjs";
+} from "../../chunk-PVHFFDPG.mjs";
 export {
   blockskilltype,
   hitflag,

@@ -475,8 +475,6 @@ function isDeviceIp(ip, listen_options) {
 }
 
 // src/pkt-capture.ts
-var import_raw_socket_sniffer = require("raw-socket-sniffer");
-var import_os = require("os");
 var import_child_process = require("child_process");
 var { findDevice, deviceList } = import_cap.default.Cap;
 var { Ethernet, PROTOCOL, IPV4, TCP } = import_cap.default.decoders;
@@ -541,22 +539,8 @@ var PcapCapture = class extends PktCapture {
     this.c.close();
   }
 };
-var RawSocketCapture = class extends PktCapture {
-  rs;
-  constructor(ip, listen_options) {
-    super(ip, listen_options);
-    this.rs = new import_raw_socket_sniffer.RawSocket(ip, listen_options.port);
-  }
-  listen() {
-    this.rs.on("data", this.dispatchPacket.bind(this));
-    this.rs.listen();
-  }
-  close() {
-  }
-};
 var PktCaptureMode = /* @__PURE__ */ ((PktCaptureMode2) => {
   PktCaptureMode2[PktCaptureMode2["MODE_PCAP"] = 0] = "MODE_PCAP";
-  PktCaptureMode2[PktCaptureMode2["MODE_RAW_SOCKET"] = 1] = "MODE_RAW_SOCKET";
   return PktCaptureMode2;
 })(PktCaptureMode || {});
 var PktCaptureAll = class extends import_tiny_typed_emitter.TypedEmitter {
@@ -569,9 +553,6 @@ var PktCaptureAll = class extends import_tiny_typed_emitter.TypedEmitter {
         "[meter-core/PktCaptureAll] - Couldn't restart as admin, fallback to pcap mode, consider starting as admin yourself."
       );
       mode = 0 /* MODE_PCAP */;
-    }
-    if (mode === 1 /* MODE_RAW_SOCKET */) {
-      updateFirewall();
     }
     if (mode === 0 /* MODE_PCAP */) {
       for (const device of deviceList()) {
@@ -592,25 +573,6 @@ var PktCaptureAll = class extends import_tiny_typed_emitter.TypedEmitter {
           }
         }
       }
-    } else if (mode === 1 /* MODE_RAW_SOCKET */) {
-      for (const addresses of Object.values((0, import_os.networkInterfaces)())) {
-        for (const device of addresses ?? []) {
-          if ((0, import_net.isIPv4)(device.address) && device.family === "IPv4" && device.internal === false && !this.captures.has(device.address)) {
-            try {
-              const rsc = new RawSocketCapture(device.address, {
-                ip: device.address,
-                mask: device.netmask,
-                port: 6040
-              });
-              rsc.on("packet", (buf) => this.emit("packet", buf, device.address));
-              this.captures.set(device.address, rsc);
-              rsc.listen();
-            } catch (e) {
-              console.error(`[meter-core/PktCaptureAll] ${e}`);
-            }
-          }
-        }
-      }
     } else {
     }
   }
@@ -619,12 +581,6 @@ var PktCaptureAll = class extends import_tiny_typed_emitter.TypedEmitter {
       cap2.close();
   }
 };
-function updateFirewall() {
-  const command = `netsh advfirewall firewall delete rule name="lost-ark-dev" & netsh advfirewall firewall add rule name="lost-ark-dev" dir=in action=allow program="${process.argv[0]}"`;
-  (0, import_child_process.execSync)(command, {
-    stdio: "inherit"
-  });
-}
 function getArgList(args) {
   const filtered = args.filter((a) => a !== "");
   if (filtered.length === 0)
@@ -640,7 +596,7 @@ function isAdmin() {
   return true;
 }
 function adminRelauncher(mode) {
-  if (mode !== 1 /* MODE_RAW_SOCKET */)
+  if (mode == 0 /* MODE_PCAP */)
     return true;
   if (process.argv.includes("-relaunch"))
     return true;

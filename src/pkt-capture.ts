@@ -2,8 +2,6 @@ import cap from "cap";
 import { isIPv4 } from "net";
 import { TypedEmitter } from "tiny-typed-emitter";
 import { TCPTracker, TCPSession, ListenOptions } from "./tcp_tracker";
-import { RawSocket } from "raw-socket-sniffer";
-import { networkInterfaces } from "os";
 import { execSync } from "child_process";
 
 const { findDevice, deviceList } = cap.Cap;
@@ -87,27 +85,12 @@ class PcapCapture extends PktCapture {
     this.c.close();
   }
 }
-class RawSocketCapture extends PktCapture {
-  rs: RawSocket;
-  constructor(ip: string, listen_options: ListenOptions) {
-    //TODO: check device format (must be IP)
-    super(ip, listen_options); //Sets TCPTracker
-    this.rs = new RawSocket(ip, listen_options.port);
-  }
-  override listen(): void {
-    this.rs.on("data", this.dispatchPacket.bind(this));
-    this.rs.listen();
-  }
-  override close() {
-    //TODO: implement clean close in RawSocket addon
-  }
-}
+
 interface PktCaptureAllEvents {
   packet: (buf: Buffer, deviceName: string) => void;
 }
 export enum PktCaptureMode {
   MODE_PCAP,
-  MODE_RAW_SOCKET,
 }
 
 export class PktCaptureAll extends TypedEmitter<PktCaptureAllEvents> {
@@ -121,10 +104,6 @@ export class PktCaptureAll extends TypedEmitter<PktCaptureAllEvents> {
         "[meter-core/PktCaptureAll] - Couldn't restart as admin, fallback to pcap mode, consider starting as admin yourself."
       );
       mode = PktCaptureMode.MODE_PCAP;
-    }
-    if (mode === PktCaptureMode.MODE_RAW_SOCKET) {
-      //Already as admin, add firewell rule
-      updateFirewall();
     }
 
     if (mode === PktCaptureMode.MODE_PCAP) {
@@ -141,32 +120,6 @@ export class PktCaptureAll extends TypedEmitter<PktCaptureAllEvents> {
               pcapc.on("packet", (buf) => this.emit("packet", buf, device.name));
               this.captures.set(device.name, pcapc);
               pcapc.listen();
-            } catch (e) {
-              console.error(`[meter-core/PktCaptureAll] ${e}`);
-            }
-          }
-        }
-      }
-    } else if (mode === PktCaptureMode.MODE_RAW_SOCKET) {
-      // [Warning] require privileges
-      for (const addresses of Object.values(networkInterfaces())) {
-        for (const device of addresses ?? []) {
-          if (
-            isIPv4(device.address) &&
-            device.family === "IPv4" &&
-            device.internal === false &&
-            !this.captures.has(device.address) // Some users have multiple interfaces with same ip, we want only 1
-          ) {
-            try {
-              const rsc = new RawSocketCapture(device.address, {
-                ip: device.address,
-                mask: device.netmask,
-                port: 6040,
-              });
-              // re-emit
-              rsc.on("packet", (buf) => this.emit("packet", buf, device.address));
-              this.captures.set(device.address, rsc);
-              rsc.listen();
             } catch (e) {
               console.error(`[meter-core/PktCaptureAll] ${e}`);
             }
@@ -209,7 +162,7 @@ function isAdmin(): boolean {
  * @returns False if we have to fall back to pcap, process exit if not, True if already in admin state
  */
 export function adminRelauncher(mode: PktCaptureMode): boolean {
-  if (mode !== PktCaptureMode.MODE_RAW_SOCKET) return true;
+  if (mode == PktCaptureMode.MODE_PCAP) return true;
   //Check if we started our process with the -relaunch paramater (which means that it failed, and we want to fall back to pcap instead)
 
   if (process.argv.includes("-relaunch")) return true; // We assume that we already relaunched successfully earlier, so we don't need to check admin again
