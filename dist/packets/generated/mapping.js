@@ -368,11 +368,41 @@ function read16(buf) {
   data.Unk4 = reader.u64();
   data.Unk5 = reader.u32();
   data.Unk6 = reader.u8();
-  data.Unk7 = reader.u16();
-  data.Unk8 = reader.u16();
-  reader.skip(66);
+  data.Name = reader.string(20);
+  data.Unk8 = reader.u8();
+  data.Unk9 = reader.u8();
+  data.Unk10 = reader.u32();
+  data.Unk11 = reader.u16();
+  data.Unk12 = reader.bytes(35);
+  data.Unk13 = reader.u8();
+  data.Unk14 = reader.u32();
+  data.Unk15 = reader.u64();
+  data.struct_372 = reader.array(reader.u16(), () => read15(reader), 5);
+  data.Unk17 = reader.u32();
+  data.Unk18 = reader.u8();
+  data.Unk19 = reader.u32();
+  data.Unk20 = reader.u32();
+  data.Unk21 = reader.u8();
+  data.Unk22 = reader.u32();
+  if (reader.bool())
+    data.Unk23_0 = reader.u32();
+  data.struct_93 = reader.bytes(reader.u16(), 57);
+  data.Unk25 = reader.u8();
+  data.Unk26 = reader.u8();
+  data.Unk27 = reader.u8();
+  data.Unk28 = reader.u64();
+  data.struct_218 = reader.bytes(reader.u16(), 3, 17);
+  data.CharacterId = reader.u64();
+  data.Unk31 = reader.u8();
+  data.Unk32 = reader.u8();
   data.Level = reader.u16();
-  reader.skip(44);
+  data.Unk34 = reader.u8();
+  data.Unk35 = reader.u8();
+  data.Unk36 = reader.u8();
+  data.Unk37 = reader.u8();
+  data.PlayerId = reader.u64();
+  data.Unk39 = reader.u32();
+  data.Unk40 = reader.u16();
   data.statPair = reader.array(
     reader.u16(),
     () => {
@@ -422,11 +452,11 @@ function read16(buf) {
   data.Unk46 = reader.u64();
   data.Unk47 = reader.u8();
   data.Unk48 = reader.u8();
-  data.Unk49 = reader.u32();
-  data.GearLevel = reader.u32();
-  data.Unk51 = reader.u8();
-  data.struct_92 = reader.bytes(reader.u16(), 57);
-  data.Unk53 = reader.bytes(35);
+  data.Unk49 = reader.bytes(112);
+  data.Unk50 = reader.u64();
+  data.struct_349 = reader.string(7);
+  data.ClassId = reader.u16();
+  data.Unk53 = reader.u16();
   data.Unk54 = reader.u8();
   data.Unk55 = reader.u8();
   data.Unk56 = reader.u32();
@@ -993,6 +1023,14 @@ function read46(reader) {
   return data;
 }
 
+// src/packets/generated/structures/UnpublishObject.ts
+function read46(reader) {
+  const data = {};
+  data.ObjectId = reader.u64();
+  data.UnpublishReason = reader.u8();
+  return data;
+}
+
 // src/packets/generated/definitions/PKTRemoveObject.ts
 function read47(buf) {
   const reader = new Read(buf);
@@ -1003,7 +1041,7 @@ function read47(buf) {
 var name28 = "PKTRemoveObject";
 var opcode28 = 39958;
 
-// src/packets/common/MoveOptionData.ts
+// src/packets/common/SkillMoveOptionData.ts
 function read48(reader) {
   const data = {};
   const flag = reader.u8();
@@ -1042,15 +1080,17 @@ function read49(reader) {
 // src/packets/generated/structures/SkillDamageAbnormalMoveEvent.ts
 function read50(reader) {
   const data = {};
-  data.Unk0_m = read48(reader);
+  data.Unk1_m = reader.u8();
+  data.Unk2_m = reader.u64();
+  data.SkillMoveOptionData = read48(reader);
+  data.Unk4_m = reader.u16();
   data.Unk8_m = reader.u16();
   data.Unk2_m = reader.u64();
   data.Destination = read21(reader);
   data.Unk4_m = reader.u16();
   data.skillDamageEvent = read49(reader);
   data.Position = read21(reader);
-  data.Unk3_m = reader.u16();
-  data.Unk1_m = reader.u8();
+  data.skillDamageEvent = read49(reader);
   return data;
 }
 
@@ -1058,7 +1098,25 @@ function read50(reader) {
 function read51(buf) {
   const reader = new Read(buf);
   const data = {};
+  data.Unk1_m = reader.u8();
+  data.SourceId = reader.u64();
   data.Unk2_m = reader.u32();
+  data.SkillDamageAbnormalMoveEvents = reader.array(reader.u16(), () => read50(reader), 50);
+  data.SkillId = reader.u32();
+  data.SkillEffectId = reader.u32();
+  return data;
+}
+var name29 = "PKTSkillDamageAbnormalMoveNotify";
+var opcode29 = 10555;
+
+// src/packets/generated/definitions/PKTSkillDamageNotify.ts
+function read52(buf) {
+  const reader = new Read(buf);
+  const data = {};
+  data.SkillId = reader.u32();
+  data.SkillLevel = reader.u8();
+  data.SkillEffectId = reader.u32();
+  data.SkillDamageEvents = reader.array(reader.u16(), () => read49(reader), 50);
   data.SourceId = reader.u64();
   data.Unk1_m = reader.u8();
   data.SkillDamageAbnormalMoveEvents = reader.array(reader.u16(), () => read50(reader), 50);
@@ -1069,8 +1127,8 @@ function read51(buf) {
 var name29 = "PKTSkillDamageAbnormalMoveNotify";
 var opcode29 = 29416;
 
-// src/packets/generated/definitions/PKTSkillDamageNotify.ts
-function read52(buf) {
+// src/packets/generated/definitions/PKTSkillStageNotify.ts
+function read53(buf) {
   const reader = new Read(buf);
   const data = {};
   data.SkillDamageEvents = reader.array(reader.u16(), () => read49(reader), 50);
@@ -1121,6 +1179,30 @@ function read54(reader) {
 
 // src/packets/generated/definitions/PKTSkillStartNotify.ts
 function read55(buf) {
+  const reader = new Read(buf);
+  const data = {};
+  data.SourceId = reader.u64();
+  data.CurPosition = read21(reader);
+  if (reader.bool())
+    data.Unk1_m = reader.i32();
+  data.NewPosition = read21(reader);
+  data.CurDirectionYaw = read22(reader);
+  data.AimTargetPosition = read21(reader);
+  if (reader.bool())
+    data.AiStateId = reader.u32();
+  data.SkillLevel = reader.u8();
+  data.SkillId = reader.u32();
+  data.NewDirectionYaw = read22(reader);
+  data.SkillOptionData = read54(reader);
+  if (reader.bool())
+    data.PitchRotation = read22(reader);
+  return data;
+}
+var name32 = "PKTSkillStartNotify";
+var opcode32 = 28344;
+
+// src/packets/generated/definitions/PKTStatChangeOriginNotify.ts
+function read56(buf) {
   const reader = new Read(buf);
   const data = {};
   data.AimTargetPosition = read21(reader);
@@ -1195,6 +1277,18 @@ var opcode34 = 4713;
 function read58(buf) {
   const reader = new Read(buf);
   const data = {};
+  data.ObjectId = reader.u64();
+  data.Reason = reader.u8();
+  data.statusEffectIds = reader.array(reader.u16(), () => reader.u32(), 80);
+  return data;
+}
+var name35 = "PKTStatusEffectRemoveNotify";
+var opcode35 = 42373;
+
+// src/packets/generated/definitions/PKTStatusEffectSyncDataNotify.ts
+function read59(buf) {
+  const reader = new Read(buf);
+  const data = {};
   data.statusEffectIds = reader.array(reader.u16(), () => reader.u32(), 80);
   data.Reason = reader.u8();
   data.ObjectId = reader.u64();
@@ -1203,8 +1297,8 @@ function read58(buf) {
 var name35 = "PKTStatusEffectRemoveNotify";
 var opcode35 = 55030;
 
-// src/packets/generated/definitions/PKTStatusEffectSyncDataNotify.ts
-function read59(buf) {
+// src/packets/generated/definitions/PKTTriggerBossBattleStatus.ts
+function read60(buf) {
   const reader = new Read(buf);
   const data = {};
   data.ObjectId = reader.u64();
@@ -1219,8 +1313,8 @@ function read59(buf) {
 var name36 = "PKTStatusEffectSyncDataNotify";
 var opcode36 = 35589;
 
-// src/packets/generated/definitions/PKTTriggerBossBattleStatus.ts
-function read60(buf) {
+// src/packets/generated/definitions/PKTTriggerFinishNotify.ts
+function read61(buf) {
   const reader = new Read(buf);
   const data = {};
   data.Unk2_m = reader.bool();
@@ -1232,8 +1326,8 @@ function read60(buf) {
 var name37 = "PKTTriggerBossBattleStatus";
 var opcode37 = 35800;
 
-// src/packets/generated/definitions/PKTTriggerFinishNotify.ts
-function read61(buf) {
+// src/packets/generated/definitions/PKTTriggerStartNotify.ts
+function read62(buf) {
   const reader = new Read(buf);
   const data = {};
   data.TriggerId = reader.u32();
@@ -1245,8 +1339,8 @@ function read61(buf) {
 var name38 = "PKTTriggerFinishNotify";
 var opcode38 = 53300;
 
-// src/packets/generated/definitions/PKTTriggerStartNotify.ts
-function read62(buf) {
+// src/packets/generated/definitions/PKTTroopMemberUpdateMinNotify.ts
+function read63(buf) {
   const reader = new Read(buf);
   const data = {};
   data.TriggerId = reader.u32();
