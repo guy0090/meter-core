@@ -32,7 +32,7 @@ meterData.processSkillBuffEffectData(JSON.parse(readFileSync("meter-data/databas
 
 const legacyLogger = new LegacyLogger(stream, meterData);
 legacyLogger.on("line", (line) => {
-  console.log(line);
+  console.info(line);
 });
 /*
 stream.on("*", (data, opcode, compression, xor) => {
@@ -45,4 +45,4 @@ stream.on("*", (data, opcode, compression, xor) => {
 */
 inspect.defaultOptions.depth = null;
 
-console.log("Logging");
+console.info("Logging");

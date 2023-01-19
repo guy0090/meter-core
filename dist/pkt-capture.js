@@ -30,8 +30,7 @@ __export(pkt_capture_exports, {
   PktCaptureMode: () => PktCaptureMode,
   adminRelauncher: () => adminRelauncher,
   deviceList: () => deviceList,
-  findDevice: () => findDevice,
-  setLogger: () => setLogger
+  findDevice: () => findDevice
 });
 module.exports = __toCommonJS(pkt_capture_exports);
 var import_cap = __toESM(require("cap"));
@@ -64,7 +63,7 @@ var IPTracker = class extends import_stream.EventEmitter {
         segment = this.stored[this.next_id];
       }
     }
-    console.log(ip.info.id, this.next_id, ip.info.id === this.next_id, Object.keys(this.stored));
+    console.debug(ip.info.id, this.next_id, ip.info.id === this.next_id, Object.keys(this.stored));
   }
   increment_id() {
     this.next_id = (this.next_id + 1) % MAX_ID;
@@ -160,7 +159,7 @@ var TCPTracker = class extends import_stream2.EventEmitter {
       this.sessions[key] = session;
       session.on("end", () => {
         delete this.sessions[key];
-        console.info(
+        console.debug(
           `[meter-core/tcp-tracker] - Remove session ${session?.src}->${session?.dst} (Total: ${Object.keys(this.sessions).length})`
         );
       });
@@ -352,7 +351,7 @@ var TCPSession = class extends import_stream2.EventEmitter {
     if (flush_mask.includes(0)) {
       buffers.length = 0;
       buffers.push(...newBuffers);
-      console.log(flush_mask.toString("hex"));
+      console.debug(flush_mask.toString("hex"));
       if (buffers.length >= 10) {
         console.warn(`[meter-core/tcp_tracker] - Dropped ${totalLen} bytes`);
         return Buffer.alloc(0);
@@ -479,8 +478,6 @@ function isDeviceIp(ip, listen_options) {
 var import_child_process = require("child_process");
 var { findDevice, deviceList } = import_cap.default.Cap;
 var { Ethernet, PROTOCOL, IPV4, TCP } = import_cap.default.decoders;
-var logger = console;
-var setLogger = (l) => !l ? logger = console : logger = l;
 var PktCapture = class extends import_tiny_typed_emitter.TypedEmitter {
   tcpTracker;
   device;
@@ -491,8 +488,8 @@ var PktCapture = class extends import_tiny_typed_emitter.TypedEmitter {
     this.port = listen_options.port;
     this.tcpTracker = new TCPTracker(listen_options);
     this.tcpTracker.on("session", (session) => {
-      logger.info(
-        `[meter-core/pkt-capture] - New session ${session.src}->${session.dst} ${session.is_ignored ? "(ingored) " : ""}(Total: ${Object.keys(this.tcpTracker.sessions).length})`
+      console.debug(
+        `[meter-core/pkt-capture] - New session ${session.src}->${session.dst} ${session.is_ignored ? "(ignored) " : ""}(Total: ${Object.keys(this.tcpTracker.sessions).length})`
       );
       session.on("payload_recv", (data) => {
         this.emit("packet", data);
@@ -552,7 +549,7 @@ var PktCaptureAll = class extends import_tiny_typed_emitter.TypedEmitter {
     super();
     this.captures = /* @__PURE__ */ new Map();
     if (!adminRelauncher(mode)) {
-      logger.warn(
+      console.warn(
         "[meter-core/PktCaptureAll] - Couldn't restart as admin, fallback to pcap mode, consider starting as admin yourself."
       );
       mode = 0 /* MODE_PCAP */;
@@ -571,7 +568,7 @@ var PktCaptureAll = class extends import_tiny_typed_emitter.TypedEmitter {
               this.captures.set(device.name, pcapc);
               pcapc.listen();
             } catch (e) {
-              logger.error(`[meter-core/PktCaptureAll] ${e}`);
+              console.error(`[meter-core/PktCaptureAll] ${e}`);
             }
           }
         }
@@ -611,7 +608,7 @@ function adminRelauncher(mode) {
       stdio: "inherit"
     });
   } catch (e) {
-    logger.info(`[meter-core/pkt-capture] - ${e}`);
+    console.error(`[meter-core/pkt-capture] - ${e}`);
     return false;
   }
   process.exit(0);
@@ -622,6 +619,5 @@ function adminRelauncher(mode) {
   PktCaptureMode,
   adminRelauncher,
   deviceList,
-  findDevice,
-  setLogger
+  findDevice
 });

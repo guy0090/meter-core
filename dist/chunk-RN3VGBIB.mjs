@@ -1,6 +1,6 @@
 import {
   IPTracker
-} from "./chunk-J367NFGR.mjs";
+} from "./chunk-3C4JOWKM.mjs";
 
 // src/tcp_tracker.ts
 import { EventEmitter } from "stream";
@@ -88,7 +88,7 @@ var TCPTracker = class extends EventEmitter {
       this.sessions[key] = session;
       session.on("end", () => {
         delete this.sessions[key];
-        console.info(
+        console.debug(
           `[meter-core/tcp-tracker] - Remove session ${session?.src}->${session?.dst} (Total: ${Object.keys(this.sessions).length})`
         );
       });
@@ -280,7 +280,7 @@ var TCPSession = class extends EventEmitter {
     if (flush_mask.includes(0)) {
       buffers.length = 0;
       buffers.push(...newBuffers);
-      console.log(flush_mask.toString("hex"));
+      console.debug(flush_mask.toString("hex"));
       if (buffers.length >= 10) {
         console.warn(`[meter-core/tcp_tracker] - Dropped ${totalLen} bytes`);
         return Buffer.alloc(0);

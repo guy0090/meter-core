@@ -39,7 +39,7 @@ export class IPTracker extends EventEmitter {
         segment = this.stored[this.next_id];
       }
     }
-    console.log(ip.info.id, this.next_id, ip.info.id === this.next_id, Object.keys(this.stored));
+    console.debug(ip.info.id, this.next_id, ip.info.id === this.next_id, Object.keys(this.stored));
   }
   increment_id() {
     this.next_id = (this.next_id + 1) % MAX_ID;

@@ -78,7 +78,7 @@ export class TCPTracker extends EventEmitter {
       this.sessions[key] = session;
       session.on("end", () => {
         delete this.sessions[key];
-        console.info(
+        console.debug(
           `[meter-core/tcp-tracker] - Remove session ${session?.src}->${session?.dst} (Total: ${
             Object.keys(this.sessions).length
           })`
@@ -160,10 +160,10 @@ export class TCPSession extends EventEmitter {
         and a private ip his VM that doesn't match the host subnet.
 
         Most accurate ways would be to:
-        - settings 
+        - settings
         or
         - checking for remoteserver being on amazon range (as well as port 6040), this will help a lot
-        
+
         But we will try to see how it goes by just checking the listening port,
         the drawback is that it'll listen on bad connections like "local:6040->remote:????", but it should be ignored later because opcodes won't match or parsing will fail
         */
@@ -377,7 +377,7 @@ export class TCPSession extends EventEmitter {
       buffers.length = 0;
       buffers.push(...newBuffers);
 
-      console.log(flush_mask.toString("hex"));
+      console.debug(flush_mask.toString("hex"));
 
       if (buffers.length >= 10) {
         //TODO: add a fail count for a given ack to not flush that many buffers, and then, only flush buffers in between

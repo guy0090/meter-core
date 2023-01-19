@@ -49,7 +49,7 @@ var IPTracker = class extends import_stream.EventEmitter {
         segment = this.stored[this.next_id];
       }
     }
-    console.log(ip.info.id, this.next_id, ip.info.id === this.next_id, Object.keys(this.stored));
+    console.debug(ip.info.id, this.next_id, ip.info.id === this.next_id, Object.keys(this.stored));
   }
   increment_id() {
     this.next_id = (this.next_id + 1) % MAX_ID;
@@ -145,7 +145,7 @@ var TCPTracker = class extends import_stream2.EventEmitter {
       this.sessions[key] = session;
       session.on("end", () => {
         delete this.sessions[key];
-        console.info(
+        console.debug(
           `[meter-core/tcp-tracker] - Remove session ${session?.src}->${session?.dst} (Total: ${Object.keys(this.sessions).length})`
         );
       });
@@ -337,7 +337,7 @@ var TCPSession = class extends import_stream2.EventEmitter {
     if (flush_mask.includes(0)) {
       buffers.length = 0;
       buffers.push(...newBuffers);
-      console.log(flush_mask.toString("hex"));
+      console.debug(flush_mask.toString("hex"));
       if (buffers.length >= 10) {
         console.warn(`[meter-core/tcp_tracker] - Dropped ${totalLen} bytes`);
         return Buffer.alloc(0);
