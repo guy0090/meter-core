@@ -406,9 +406,9 @@ function read16(buf) {
   data.Unk29 = reader.u16();
   data.Name = reader.string(20);
   data.Unk31 = reader.u8();
-  data.Unk32 = reader.u32();
-  data.Unk33 = reader.u8();
-  data.struct_368 = reader.array(reader.u16(), () => read15(reader), 5);
+  data.Unk32 = reader.u8();
+  data.Level = reader.u16();
+  data.Unk34 = reader.u8();
   data.Unk35 = reader.u8();
   if (reader.bool())
     data.Unk36_0 = reader.u32();
@@ -424,11 +424,11 @@ function read16(buf) {
   data.Unk46 = reader.u64();
   data.Unk47 = reader.u8();
   data.Unk48 = reader.u8();
-  data.Unk49 = reader.u32();
-  data.GearLevel = reader.u32();
-  data.Unk51 = reader.u8();
-  data.struct_92 = reader.bytes(reader.u16(), 57);
-  data.Unk53 = reader.bytes(35);
+  data.Unk49 = reader.bytes(112);
+  data.Unk50 = reader.u64();
+  data.struct_349 = reader.string(7);
+  data.ClassId = reader.u16();
+  data.Unk53 = reader.u16();
   data.Unk54 = reader.u8();
   data.Unk55 = reader.u8();
   data.Unk56 = reader.u32();
@@ -985,13 +985,13 @@ function read45(buf) {
   return data;
 }
 var name27 = "PKTRaidResult";
-var opcode27 = 17609;
+var opcode27 = 24561;
 
 // src/packets/generated/structures/UnpublishObject.ts
 function read46(reader) {
   const data = {};
-  data.UnpublishReason = reader.u8();
   data.ObjectId = reader.u64();
+  data.UnpublishReason = reader.u8();
   return data;
 }
 
@@ -1005,7 +1005,7 @@ function read47(buf) {
 var name28 = "PKTRemoveObject";
 var opcode28 = 39958;
 
-// src/packets/common/MoveOptionData.ts
+// src/packets/common/SkillMoveOptionData.ts
 function read48(reader) {
   const data = {};
   const flag = reader.u8();
@@ -1044,15 +1044,17 @@ function read49(reader) {
 // src/packets/generated/structures/SkillDamageAbnormalMoveEvent.ts
 function read50(reader) {
   const data = {};
-  data.Unk0_m = read48(reader);
+  data.Unk1_m = reader.u8();
+  data.Unk2_m = reader.u64();
+  data.SkillMoveOptionData = read48(reader);
+  data.Unk4_m = reader.u16();
   data.Unk8_m = reader.u16();
   data.Unk2_m = reader.u64();
   data.Destination = read21(reader);
   data.Unk4_m = reader.u16();
   data.skillDamageEvent = read49(reader);
   data.Position = read21(reader);
-  data.Unk3_m = reader.u16();
-  data.Unk1_m = reader.u8();
+  data.skillDamageEvent = read49(reader);
   return data;
 }
 
@@ -1061,9 +1063,8 @@ function read51(buf) {
   const reader = new Read(buf);
   const data = {};
   data.Unk2_m = reader.u32();
-  data.SourceId = reader.u64();
-  data.Unk1_m = reader.u8();
   data.SkillDamageAbnormalMoveEvents = reader.array(reader.u16(), () => read50(reader), 50);
+  data.SkillId = reader.u32();
   data.SkillEffectId = reader.u32();
   data.SkillId = reader.u32();
   return data;
@@ -1080,6 +1081,8 @@ function read52(buf) {
   data.SourceId = reader.u64();
   data.SkillLevel = reader.u8();
   data.SkillEffectId = reader.u32();
+  data.SkillDamageEvents = reader.array(reader.u16(), () => read49(reader), 50);
+  data.SourceId = reader.u64();
   return data;
 }
 var name30 = "PKTSkillDamageNotify";
@@ -1140,6 +1143,9 @@ function read55(buf) {
     data.AiStateId = reader.u32();
   data.SkillLevel = reader.u8();
   data.NewDirectionYaw = read22(reader);
+  data.SkillOptionData = read54(reader);
+  if (reader.bool())
+    data.PitchRotation = read22(reader);
   return data;
 }
 var name32 = "PKTSkillStartNotify";
