@@ -10,6 +10,8 @@ import { TypedEmitter } from "tiny-typed-emitter";
 import { execSync } from "child_process";
 var { findDevice, deviceList } = cap.Cap;
 var { Ethernet, PROTOCOL, IPV4, TCP } = cap.decoders;
+var logger = console;
+var setLogger = (l) => !l ? logger = console : logger = l;
 var PktCapture = class extends TypedEmitter {
   tcpTracker;
   device;
@@ -20,7 +22,7 @@ var PktCapture = class extends TypedEmitter {
     this.port = listen_options.port;
     this.tcpTracker = new TCPTracker(listen_options);
     this.tcpTracker.on("session", (session) => {
-      console.info(
+      logger.info(
         `[meter-core/pkt-capture] - New session ${session.src}->${session.dst} ${session.is_ignored ? "(ingored) " : ""}(Total: ${Object.keys(this.tcpTracker.sessions).length})`
       );
       session.on("payload_recv", (data) => {
@@ -81,7 +83,7 @@ var PktCaptureAll = class extends TypedEmitter {
     super();
     this.captures = /* @__PURE__ */ new Map();
     if (!adminRelauncher(mode)) {
-      console.warn(
+      logger.warn(
         "[meter-core/PktCaptureAll] - Couldn't restart as admin, fallback to pcap mode, consider starting as admin yourself."
       );
       mode = 0 /* MODE_PCAP */;
@@ -100,7 +102,7 @@ var PktCaptureAll = class extends TypedEmitter {
               this.captures.set(device.name, pcapc);
               pcapc.listen();
             } catch (e) {
-              console.error(`[meter-core/PktCaptureAll] ${e}`);
+              logger.error(`[meter-core/PktCaptureAll] ${e}`);
             }
           }
         }
@@ -140,7 +142,7 @@ function adminRelauncher(mode) {
       stdio: "inherit"
     });
   } catch (e) {
-    console.info(`[meter-core/pkt-capture] - ${e}`);
+    logger.info(`[meter-core/pkt-capture] - ${e}`);
     return false;
   }
   process.exit(0);
@@ -150,5 +152,6 @@ export {
   PktCaptureMode,
   adminRelauncher,
   deviceList,
-  findDevice
+  findDevice,
+  setLogger
 };

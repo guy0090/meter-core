@@ -3,11 +3,15 @@ import { isIPv4 } from "net";
 import { TypedEmitter } from "tiny-typed-emitter";
 import { TCPTracker, TCPSession, ListenOptions } from "./tcp_tracker";
 import { execSync } from "child_process";
+import type { Logger } from "winston";
 
 const { findDevice, deviceList } = cap.Cap;
 const { Ethernet, PROTOCOL, IPV4, TCP } = cap.decoders;
 
 export { findDevice, deviceList };
+
+var logger: Console | Logger = console;
+export const setLogger = (l: Console | Logger) => !l ? logger = console : logger = l;
 
 interface IPktCapture {
   tcpTracker: TCPTracker;
@@ -28,11 +32,12 @@ abstract class PktCapture extends TypedEmitter<PktCaptureEvents> implements IPkt
   port: number;
   constructor(device: string, listen_options: ListenOptions) {
     super();
+
     this.device = device;
     this.port = listen_options.port;
     this.tcpTracker = new TCPTracker(listen_options);
     this.tcpTracker.on("session", (session: TCPSession) => {
-      console.info(
+      logger.info(
         `[meter-core/pkt-capture] - New session ${session.src}->${session.dst} ${
           session.is_ignored ? "(ingored) " : ""
         }(Total: ${Object.keys(this.tcpTracker.sessions).length})`
@@ -100,7 +105,7 @@ export class PktCaptureAll extends TypedEmitter<PktCaptureAllEvents> {
     super();
     this.captures = new Map();
     if (!adminRelauncher(mode)) {
-      console.warn(
+      logger.warn(
         "[meter-core/PktCaptureAll] - Couldn't restart as admin, fallback to pcap mode, consider starting as admin yourself."
       );
       mode = PktCaptureMode.MODE_PCAP;
@@ -121,7 +126,7 @@ export class PktCaptureAll extends TypedEmitter<PktCaptureAllEvents> {
               this.captures.set(device.name, pcapc);
               pcapc.listen();
             } catch (e) {
-              console.error(`[meter-core/PktCaptureAll] ${e}`);
+              logger.error(`[meter-core/PktCaptureAll] ${e}`);
             }
           }
         }
@@ -177,7 +182,7 @@ export function adminRelauncher(mode: PktCaptureMode): boolean {
       stdio: "inherit",
     });
   } catch (e) {
-    console.info(`[meter-core/pkt-capture] - ${e}`);
+    logger.info(`[meter-core/pkt-capture] - ${e}`);
     return false;
   }
   process.exit(0);

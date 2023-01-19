@@ -1,11 +1,13 @@
 import cap from 'cap';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { T as TCPTracker, L as ListenOptions } from './ip_tracker-6e43aa7a.js';
+import { Logger } from 'winston';
 import 'stream';
 
 declare const findDevice: typeof cap.Cap.findDevice;
 declare const deviceList: typeof cap.Cap.deviceList;
 
+declare const setLogger: (l: Console | Logger) => Console | Logger;
 interface IPktCapture {
     tcpTracker: TCPTracker;
     device: string;
@@ -43,4 +45,4 @@ declare class PktCaptureAll extends TypedEmitter<PktCaptureAllEvents> {
  */
 declare function adminRelauncher(mode: PktCaptureMode): boolean;
 
-export { PktCaptureAll, PktCaptureMode, adminRelauncher, deviceList, findDevice };
+export { PktCaptureAll, PktCaptureMode, adminRelauncher, deviceList, findDevice, setLogger };

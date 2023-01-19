@@ -30,7 +30,8 @@ __export(pkt_capture_exports, {
   PktCaptureMode: () => PktCaptureMode,
   adminRelauncher: () => adminRelauncher,
   deviceList: () => deviceList,
-  findDevice: () => findDevice
+  findDevice: () => findDevice,
+  setLogger: () => setLogger
 });
 module.exports = __toCommonJS(pkt_capture_exports);
 var import_cap = __toESM(require("cap"));
@@ -478,6 +479,8 @@ function isDeviceIp(ip, listen_options) {
 var import_child_process = require("child_process");
 var { findDevice, deviceList } = import_cap.default.Cap;
 var { Ethernet, PROTOCOL, IPV4, TCP } = import_cap.default.decoders;
+var logger = console;
+var setLogger = (l) => !l ? logger = console : logger = l;
 var PktCapture = class extends import_tiny_typed_emitter.TypedEmitter {
   tcpTracker;
   device;
@@ -488,7 +491,7 @@ var PktCapture = class extends import_tiny_typed_emitter.TypedEmitter {
     this.port = listen_options.port;
     this.tcpTracker = new TCPTracker(listen_options);
     this.tcpTracker.on("session", (session) => {
-      console.info(
+      logger.info(
         `[meter-core/pkt-capture] - New session ${session.src}->${session.dst} ${session.is_ignored ? "(ingored) " : ""}(Total: ${Object.keys(this.tcpTracker.sessions).length})`
       );
       session.on("payload_recv", (data) => {
@@ -549,7 +552,7 @@ var PktCaptureAll = class extends import_tiny_typed_emitter.TypedEmitter {
     super();
     this.captures = /* @__PURE__ */ new Map();
     if (!adminRelauncher(mode)) {
-      console.warn(
+      logger.warn(
         "[meter-core/PktCaptureAll] - Couldn't restart as admin, fallback to pcap mode, consider starting as admin yourself."
       );
       mode = 0 /* MODE_PCAP */;
@@ -568,7 +571,7 @@ var PktCaptureAll = class extends import_tiny_typed_emitter.TypedEmitter {
               this.captures.set(device.name, pcapc);
               pcapc.listen();
             } catch (e) {
-              console.error(`[meter-core/PktCaptureAll] ${e}`);
+              logger.error(`[meter-core/PktCaptureAll] ${e}`);
             }
           }
         }
@@ -608,7 +611,7 @@ function adminRelauncher(mode) {
       stdio: "inherit"
     });
   } catch (e) {
-    console.info(`[meter-core/pkt-capture] - ${e}`);
+    logger.info(`[meter-core/pkt-capture] - ${e}`);
     return false;
   }
   process.exit(0);
@@ -619,5 +622,6 @@ function adminRelauncher(mode) {
   PktCaptureMode,
   adminRelauncher,
   deviceList,
-  findDevice
+  findDevice,
+  setLogger
 });
