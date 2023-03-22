@@ -10,7 +10,10 @@ export type Skill = {
   name: string;
   desc: string;
   classid: number;
-  icon: number;
+  icon: string;
+  summonids?: number[];
+  summonsourceskill?: number;
+  sourceskill?: number;
 };
 
 export type SkillBuff = {
@@ -18,14 +21,46 @@ export type SkillBuff = {
   name: string;
   desc: string;
   icon: string;
+  iconshowtype: string; // statuseffecticonshowtype
   duration: number;
+  category: "buff" | "debuff";
+  type: string; // statuseffecttype
+  buffcategory: string;
+  target: string;
+  uniquegroup: number;
   overlapFlag: number;
+  passiveoption: PassiveOption[];
+  sourceskill?: number;
+  setname?: string; // set nicename when buffcategory === "set"
+};
+
+export type PassiveOption = {
+  type: string; //addontype
+  keystat: string; //stattype
+  keyindex: number;
+  value: number;
+};
+
+export type CombatEffect = {
+  id: number;
+  conditions: CombatEffectCondition[];
+  actions: CombatEffectActions[];
+};
+export type CombatEffectCondition = {
+  type: string; //combateffectconditiontype
+  actor: string; //combateffectactortype
+  arg: number;
+};
+export type CombatEffectActions = {
+  type: string; //combateffectactiontype
+  actor: string; //combateffectactortype
 };
 
 export type SkillEffect = {
   id: number;
   comment: string;
   stagger: number;
+  sourceskill: number;
   itemname?: string;
   itemdesc?: string;
   icon?: string;
@@ -39,6 +74,7 @@ export class MeterData {
   skill: Map<number, Skill>;
   skillBuff: Map<number, SkillBuff>;
   skillEffect: Map<number, SkillEffect>;
+  combatEffect: Map<number, CombatEffect>;
 
   constructor() {
     this.enums = new Map();
@@ -47,6 +83,7 @@ export class MeterData {
     this.skill = new Map();
     this.skillBuff = new Map();
     this.skillEffect = new Map();
+    this.combatEffect = new Map();
   }
 
   processEnumData(data: { [key: string]: { [key: string]: string } }) {
@@ -86,6 +123,11 @@ export class MeterData {
       this.skillEffect.set(skillEffect.id, skillEffect);
     }
   }
+  processCombatEffectData(data: { [key: string]: CombatEffect }) {
+    for (const combatEffect of Object.values(data)) {
+      this.combatEffect.set(combatEffect.id, combatEffect);
+    }
+  }
 
   getNpcName(id: number) {
     return this.npc.get(id)?.name || "";
@@ -106,7 +148,9 @@ export class MeterData {
   getSkillEffectComment(id: number) {
     return this.skillEffect.get(id)?.comment || "";
   }
-
+  isSupportClassId(id: number) {
+    return id === 105 || id === 204 || id === 603;
+  }
   isBattleItem(id: number, type?: "attack" | "buff" | "function") {
     const itemcategory = this.skillEffect.get(id)?.itemcategory;
     switch (type) {

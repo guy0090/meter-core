@@ -9,7 +9,7 @@ declare class PacketBuffer {
     read(): Buffer | undefined;
 }
 
-declare type IPv4 = {
+type IPv4 = {
     info: {
         hdrlen: number;
         dscp: number;
@@ -27,7 +27,7 @@ declare type IPv4 = {
     offset: number;
     hdrlen: number;
 };
-declare type TCP = {
+type TCP = {
     info: {
         srcport: number;
         dstport: number;
@@ -41,8 +41,8 @@ declare type TCP = {
     hdrlen: number;
     offset: number;
 };
-declare type Direction = "send" | "recv";
-declare type ListenOptions = {
+type Direction = "send" | "recv";
+type ListenOptions = {
     ip: string;
     mask: string;
     port: number;
@@ -55,12 +55,12 @@ declare class TCPTracker extends EventEmitter {
     constructor(listen_options: ListenOptions);
     track_packet(buffer: Buffer, ip: IPv4, tcp: TCP): void;
 }
-declare type TCPSegment = {
+type TCPSegment = {
     seqno: number;
     payload: Buffer;
 };
 declare class TCPSession extends EventEmitter {
-    state: "NONE" | "SYN_SENT" | "SYN_RCVD" | "ESTAB" | "FIN_WAIT" | "CLOSE_WAIT" | "LAST_ACK" | "CLOSING" | "CLOSED";
+    state: "NONE" | "ESTAB";
     src?: string;
     dst?: string;
     send_seqno: number;
@@ -73,23 +73,18 @@ declare class TCPSession extends EventEmitter {
     packetBuffer: PacketBuffer;
     send_ip_tracker: IPTracker;
     recv_ip_tracker: IPTracker;
+    skip_socks5: number;
+    in_handshake: boolean;
     constructor(listen_options: ListenOptions);
     track(buffer: Buffer, ip: IPv4, tcp: TCP): void;
-    SYN_SENT(buffer: Buffer, ip: IPv4, tcp: TCP): void;
-    SYN_RCVD(buffer: Buffer, ip: IPv4, tcp: TCP): void;
     ESTAB(buffer: Buffer, ip: IPv4, tcp: TCP): void;
-    FIN_WAIT(buffer: Buffer, ip: IPv4, tcp: TCP): void;
-    CLOSE_WAIT(buffer: Buffer, ip: IPv4, tcp: TCP): void;
-    LAST_ACK(buffer: Buffer, ip: IPv4, tcp: TCP): void;
-    CLOSING(buffer: Buffer, ip: IPv4, tcp: TCP): void;
-    CLOSED(buffer: Buffer, ip: IPv4, tcp: TCP): void;
     flush_buffers(ackno: number, direction: Direction): void;
     static get_flush(buffers: TCPSegment[], seqno: number, ackno: number): Buffer | null;
     handle_recv_segment(packet: Buffer, ip: IPv4, tcp: TCP): void;
     handle_send_segment(packet: Buffer, ip: IPv4, tcp: TCP): void;
 }
 
-declare type SegmentInfo = {
+type SegmentInfo = {
     packet: Buffer;
     ip: IPv4;
     tcp: TCP;

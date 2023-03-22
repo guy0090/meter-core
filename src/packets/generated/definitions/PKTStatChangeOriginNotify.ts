@@ -2,18 +2,16 @@
 import { Read } from "../../stream";
 import * as ReadNBytesInt64 from "../../common/ReadNBytesInt64";
 export type PKTStatChangeOriginNotify = {
-  Unk0_0?: number;
+  Unk0: { StatType: number; Value: bigint }[];
+  Unk1: { StatType: number; Value: bigint }[];
+  Unk2: number;
   ObjectId: bigint;
-  Unk2: { StatType: number; Value: bigint }[];
-  Unk3: { StatType: number; Value: bigint }[];
-  Unk4: number;
+  Unk4_0?: number;
 };
 export function read(buf: Buffer) {
   const reader = new Read(buf);
   const data = {} as PKTStatChangeOriginNotify;
-  if (reader.bool()) data.Unk0_0 = reader.u32();
-  data.ObjectId = reader.u64();
-  data.Unk2 = reader.array(
+  data.Unk0 = reader.array(
     reader.u16(),
     () => {
       const S = {} as any;
@@ -23,7 +21,7 @@ export function read(buf: Buffer) {
     },
     152
   );
-  data.Unk3 = reader.array(
+  data.Unk1 = reader.array(
     reader.u16(),
     () => {
       const T = {} as any;
@@ -33,8 +31,10 @@ export function read(buf: Buffer) {
     },
     152
   );
-  data.Unk4 = reader.u8();
+  data.Unk2 = reader.u8();
+  data.ObjectId = reader.u64();
+  if (reader.bool()) data.Unk4_0 = reader.u32();
   return data;
 }
 export const name = "PKTStatChangeOriginNotify";
-export const opcode = 24475;
+export const opcode = 3778;

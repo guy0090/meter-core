@@ -3,7 +3,7 @@ import { MeterData } from './data.js';
 import { PKTStream } from './pkt-stream.js';
 import './decompressor.js';
 import 'oodle';
-import './PKTTroopMemberUpdateMinNotify-c750104b.js';
+import './PKTTroopMemberUpdateMinNotify-6783bc92.js';
 
 declare const enum LineId {
     InitEnv = 1,
@@ -28,19 +28,20 @@ interface LegacyLoggerEvents {
     line: (line: string) => void;
     [LineId.InitEnv]: (playerId: bigint) => void;
     [LineId.PhaseTransition]: (phaseCode: number) => void;
-    [LineId.NewPC]: (id: bigint, name: string, classId: number, className: string, level: number, gearLevel: number, currentHp: number, maxHp: number) => void;
+    [LineId.NewPC]: (id: bigint, name: string, classId: number, className: string, level: number, gearLevel: number, currentHp: number, maxHp: number, characterId: bigint) => void;
     [LineId.NewNpc]: (id: bigint, npcId: number, name: string, currentHp: number, maxHp: number) => void;
     [LineId.Death]: (id: bigint, name: string, killerId: bigint, killerName: string) => void;
     [LineId.SkillStart]: (id: bigint, name: string, skillId: number, skillName: string) => void;
     [LineId.SkillStage]: (id: bigint, name: string, skillId: number, skillName: string, skillStage: number) => void;
-    [LineId.Damage]: (id: bigint, name: string, skillId: number, skillName: string, skillEffectId: number, skillEffect: string, targetId: bigint, targetName: string, damage: number, modifier: string, currentHp: number, maxHp: number) => void;
+    [LineId.Damage]: (id: bigint, name: string, skillId: number, skillName: string, skillEffectId: number, skillEffect: string, targetId: bigint, targetName: string, damage: number, modifier: string, currentHp: number, maxHp: number, effectsOnTarget: (number | bigint)[][], effectsOnSource: (number | bigint)[][]) => void;
     [LineId.Heal]: (id: bigint, name: string, healAmount: number, currentHp: number) => void;
     [LineId.Buff]: (id: bigint, name: string, buffId: number, buffName: string, sourceId: bigint, sourceName: string, shieldAmount: number) => void;
     [LineId.BuffRemove]: (statusId: bigint, statusName: string, targetId: bigint, targetName: string) => void;
     [LineId.CounterAttack]: (id: bigint, name: string, targetId: bigint, targetName: string) => void;
     [LineId.Line15]: () => void;
 }
-declare type LegacyLoggerSettings = {
+type LegacyLoggerSettings = {
+type LegacyLoggerSettings = {
     emitText?: boolean;
     emitLines?: boolean;
     emitObjects?: boolean;

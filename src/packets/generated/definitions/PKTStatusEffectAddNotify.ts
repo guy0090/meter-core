@@ -2,21 +2,21 @@
 import { Read } from "../../stream";
 import * as StatusEffectData from "../structures/StatusEffectData";
 export type PKTStatusEffectAddNotify = {
+  Unk0_0?: bigint;
   New: boolean;
   ObjectId: bigint;
-  statusEffectData: StatusEffectData.StatusEffectData;
   Unk3: bigint;
-  Unk4_0?: bigint;
+  statusEffectData: StatusEffectData.StatusEffectData;
 };
 export function read(buf: Buffer) {
   const reader = new Read(buf);
   const data = {} as PKTStatusEffectAddNotify;
+  if (reader.bool()) data.Unk0_0 = reader.u64();
   data.New = reader.bool();
   data.ObjectId = reader.u64();
-  data.statusEffectData = StatusEffectData.read(reader);
   data.Unk3 = reader.u64();
-  if (reader.bool()) data.Unk4_0 = reader.u64();
+  data.statusEffectData = StatusEffectData.read(reader);
   return data;
 }
 export const name = "PKTStatusEffectAddNotify";
-export const opcode = 35476;
+export const opcode = 5430;
