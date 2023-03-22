@@ -41,7 +41,6 @@ interface LegacyLoggerEvents {
     [LineId.Line15]: () => void;
 }
 type LegacyLoggerSettings = {
-type LegacyLoggerSettings = {
     emitText?: boolean;
     emitLines?: boolean;
     emitObjects?: boolean;

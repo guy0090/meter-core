@@ -1,7 +1,7 @@
 import {
   TCPTracker
-} from "./chunk-T2OMOYCV.mjs";
-import "./chunk-J367NFGR.mjs";
+} from "./chunk-RKGXHYB2.mjs";
+import "./chunk-3C4JOWKM.mjs";
 import "./chunk-NHABU752.mjs";
 
 // src/pkt-capture.ts
@@ -100,25 +100,6 @@ var PktCaptureAll = class extends TypedEmitter {
               pcapc.on("packet", (buf) => this.emit("packet", buf, device.name));
               this.captures.set(device.name, pcapc);
               pcapc.listen();
-            } catch (e) {
-              console.error(`[meter-core/PktCaptureAll] ${e}`);
-            }
-          }
-        }
-      }
-    } else if (mode === 1 /* MODE_RAW_SOCKET */) {
-      for (const addresses of Object.values(networkInterfaces())) {
-        for (const device of addresses ?? []) {
-          if (isIPv4(device.address) && device.family === "IPv4" && device.internal === false && !this.captures.has(device.address)) {
-            try {
-              const rsc = new RawSocketCapture(device.address, {
-                ip: device.address,
-                mask: device.netmask,
-                port
-              });
-              rsc.on("packet", (buf) => this.emit("packet", buf, device.address));
-              this.captures.set(device.address, rsc);
-              rsc.listen();
             } catch (e) {
               console.error(`[meter-core/PktCaptureAll] ${e}`);
             }
