@@ -30,7 +30,8 @@ interface PktCaptureAllEvents {
     packet: (buf: Buffer, deviceName: string) => void;
 }
 declare enum PktCaptureMode {
-    MODE_PCAP = 0
+    MODE_PCAP = 0,
+    MODE_RAW_SOCKET = 1
 }
 declare class PktCaptureAll extends TypedEmitter<PktCaptureAllEvents> {
     captures: Map<string, PktCapture>;
