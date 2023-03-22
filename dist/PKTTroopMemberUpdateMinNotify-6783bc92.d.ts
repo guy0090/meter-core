@@ -405,6 +405,19 @@ declare function read$q(buf: Buffer): PKTNewPC;
 declare const name$q = "PKTNewPC";
 declare const opcode$q = 34863;
 
+type PKTNewPC = {
+    Unk3_0_m?: number;
+    Unk5_0_m?: Buffer;
+    TrackMoveInfo?: TrackMoveInfo;
+    PCStruct: PCStruct;
+    Unk2_m: number;
+    Unk4_0_m?: Buffer;
+    Unk0_m: number;
+};
+declare function read$q(buf: Buffer): PKTNewPC;
+declare const name$q = "PKTNewPC";
+declare const opcode$q = 34863;
+
 type TripodLevel = {
     first: number;
     second: number;
@@ -596,6 +609,13 @@ type UnpublishObject = {
     ObjectId: bigint;
     UnpublishReason: number;
 };
+
+type PKTRemoveObject = {
+    unpublishedObjects: UnpublishObject[];
+};
+declare function read$c(buf: Buffer): PKTRemoveObject;
+declare const name$c = "PKTRemoveObject";
+declare const opcode$c = 57048;
 
 type PKTRemoveObject = {
     unpublishedObjects: UnpublishObject[];
