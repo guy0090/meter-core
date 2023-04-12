@@ -38,10 +38,15 @@ export interface PKTStreamEvents {
   PKTStatChangeOriginNotify: (pkt: PKT<types.PKTStatChangeOriginNotify>) => void;
   PKTStatusEffectAddNotify: (pkt: PKT<types.PKTStatusEffectAddNotify>) => void;
   PKTStatusEffectRemoveNotify: (pkt: PKT<types.PKTStatusEffectRemoveNotify>) => void;
+  PKTStatusEffectDurationNotify: (pkt: PKT<types.PKTStatusEffectDurationNotify>) => void;
   PKTStatusEffectSyncDataNotify: (pkt: PKT<types.PKTStatusEffectSyncDataNotify>) => void;
   PKTTriggerBossBattleStatus: (pkt: PKT<types.PKTTriggerBossBattleStatus>) => void;
   PKTTriggerFinishNotify: (pkt: PKT<types.PKTTriggerFinishNotify>) => void;
   PKTTriggerStartNotify: (pkt: PKT<types.PKTTriggerStartNotify>) => void;
   PKTTroopMemberUpdateMinNotify: (pkt: PKT<types.PKTTroopMemberUpdateMinNotify>) => void;
+  PKTIdentityGaugeChangeNotify: (pkt: PKT<types.PKTIdentityGaugeChangeNotify>) => void;
+  PKTZoneObjectUnpublishNotify: (pkt: PKT<types.PKTZoneObjectUnpublishNotify>) => void;
+  PKTZoneStatusEffectAddNotify: (pkt: PKT<types.PKTZoneStatusEffectAddNotify>) => void;
+  PKTZoneStatusEffectRemoveNotify: (pkt: PKT<types.PKTZoneStatusEffectRemoveNotify>) => void;
   "*": (data: Buffer, opcode: number, compression: number, xor: boolean) => void;
 }

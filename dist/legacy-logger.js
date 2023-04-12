@@ -70,10 +70,12 @@ var _PartyTracker = class {
   entityIdToPartyId;
   raidInstanceToPartyInstances;
   ownName;
+  characterNameToCharacterId;
   constructor() {
     this.characterIdToPartyId = /* @__PURE__ */ new Map();
     this.entityIdToPartyId = /* @__PURE__ */ new Map();
     this.raidInstanceToPartyInstances = /* @__PURE__ */ new Map();
+    this.characterNameToCharacterId = /* @__PURE__ */ new Map();
   }
   static getInstance() {
     if (!_PartyTracker.instance) {
@@ -81,7 +83,7 @@ var _PartyTracker = class {
     }
     return _PartyTracker.instance;
   }
-  add(characterId, entityId, partyId, raidInstanceId) {
+  add(raidInstanceId, partyId, characterId = void 0, entityId = void 0, name = void 0) {
     if (!characterId && !entityId)
       return;
     if (characterId && !entityId)
@@ -92,29 +94,13 @@ var _PartyTracker = class {
       this.characterIdToPartyId.set(characterId, partyId);
     if (entityId)
       this.entityIdToPartyId.set(entityId, partyId);
+    if (name && characterId)
+      this.characterNameToCharacterId.set(name, characterId);
     this.registerPartyId(raidInstanceId, partyId);
   }
-  addCharacterId(characterId) {
-    var entityId = PCIdMapper.getInstance().getEntityId(characterId);
-    if (!entityId)
-      return;
-    var partyId = this.getPartyIdFromEntityId(entityId);
-    if (!partyId)
-      return;
-    this.characterIdToPartyId.set(characterId, partyId);
-  }
-  addEntityId(entityId) {
-    var characterId = PCIdMapper.getInstance().getCharacterId(entityId);
-    if (!characterId)
-      return;
-    var partyId = this.getPartyIdFromCharacterId(characterId);
-    if (!partyId)
-      return;
-    this.entityIdToPartyId.set(entityId, partyId);
-  }
   completeEntry(characterId, entityId) {
-    var charPartyId = this.getPartyIdFromCharacterId(characterId);
-    var entPartyId = this.getPartyIdFromEntityId(entityId);
+    const charPartyId = this.getPartyIdFromCharacterId(characterId);
+    const entPartyId = this.getPartyIdFromEntityId(entityId);
     if (charPartyId && entPartyId)
       return;
     if (!charPartyId && entPartyId) {
@@ -125,7 +111,7 @@ var _PartyTracker = class {
     }
   }
   changeEntityId(oldEntityId, newEntityId) {
-    var partyId = this.getPartyIdFromEntityId(oldEntityId);
+    const partyId = this.getPartyIdFromEntityId(oldEntityId);
     if (partyId) {
       this.entityIdToPartyId.delete(oldEntityId);
       this.entityIdToPartyId.set(newEntityId, partyId);
@@ -135,8 +121,18 @@ var _PartyTracker = class {
     this.ownName = name;
   }
   remove(partyInstanceId, name) {
-    if (name === this.ownName)
+    if (name === this.ownName) {
       this.removePartyMappings(partyInstanceId);
+      return;
+    }
+    const chracterId = this.characterNameToCharacterId.get(name);
+    this.characterNameToCharacterId.delete(name);
+    if (!chracterId)
+      return;
+    this.characterIdToPartyId.delete(chracterId);
+    const objectId = PCIdMapper.getInstance().getEntityId(chracterId);
+    if (objectId)
+      this.characterIdToPartyId.delete(objectId);
   }
   isCharacterInParty(characterId) {
     return this.characterIdToPartyId.has(characterId);
@@ -153,13 +149,20 @@ var _PartyTracker = class {
   removePartyMappings(partyInstanceId) {
     const raidId = this.getRaidInstanceId(partyInstanceId);
     const partyIds = raidId ? this.raidInstanceToPartyInstances.get(raidId) ?? /* @__PURE__ */ new Set([partyInstanceId]) : /* @__PURE__ */ new Set([partyInstanceId]);
-    for (const e of this.characterIdToPartyId) {
-      if (partyIds.has(e[1]))
-        this.characterIdToPartyId.delete(e[0]);
+    for (const [characterId, partyId] of this.characterIdToPartyId) {
+      if (partyIds.has(partyId)) {
+        this.characterIdToPartyId.delete(characterId);
+        for (const [name, charId] of this.characterNameToCharacterId) {
+          if (characterId === charId) {
+            this.characterNameToCharacterId.delete(name);
+            break;
+          }
+        }
+      }
     }
-    for (const e of this.entityIdToPartyId) {
-      if (partyIds.has(e[1]))
-        this.entityIdToPartyId.delete(e[0]);
+    for (const [entityId, partyId] of this.entityIdToPartyId) {
+      if (partyIds.has(partyId))
+        this.entityIdToPartyId.delete(entityId);
     }
   }
   getRaidInstanceId(partyId) {
@@ -170,7 +173,7 @@ var _PartyTracker = class {
     return void 0;
   }
   registerPartyId(raidInstanceId, partyId) {
-    var list = this.raidInstanceToPartyInstances.get(raidInstanceId);
+    let list = this.raidInstanceToPartyInstances.get(raidInstanceId);
     if (!list) {
       list = /* @__PURE__ */ new Set();
       this.raidInstanceToPartyInstances.set(raidInstanceId, list);
@@ -185,9 +188,12 @@ __publicField(PartyTracker, "instance");
 var _StatusTracker = class {
   PartyStatusEffectRegistry;
   LocalStatusEffectRegistry;
-  constructor() {
+  debug;
+  trace = false;
+  constructor(debug = Boolean(process.env["DEV"])) {
     this.PartyStatusEffectRegistry = /* @__PURE__ */ new Map();
     this.LocalStatusEffectRegistry = /* @__PURE__ */ new Map();
+    this.debug = debug;
   }
   static getInstance() {
     if (!_StatusTracker.instance) {
@@ -196,12 +202,17 @@ var _StatusTracker = class {
     return _StatusTracker.instance;
   }
   getStatusEffectRegistryForPlayer(id, t) {
-    var registry = this.getPlayerRegistry(t);
-    if (registry.has(id))
-      return registry.get(id);
-    var newEntry = /* @__PURE__ */ new Map();
+    const registry = this.getPlayerRegistry(t);
+    const ser = registry.get(id);
+    if (ser)
+      return ser;
+    const newEntry = /* @__PURE__ */ new Map();
     registry.set(id, newEntry);
     return newEntry;
+  }
+  hasStatusEffectRegistryForPlayer(id, t) {
+    const registry = this.getPlayerRegistry(t);
+    return registry.has(id);
   }
   getPlayerRegistry(t) {
     switch (t) {
@@ -214,39 +225,57 @@ var _StatusTracker = class {
     }
     return this.LocalStatusEffectRegistry;
   }
-  sendCancelEffectInfo(seNew, seOld) {
-  }
-  RegisterValueUpdate(se) {
-  }
   RemoveLocalObject(objectId) {
+    const registry = this.LocalStatusEffectRegistry.get(objectId);
+    if (registry) {
+      for (const [, se] of registry) {
+        this.RemoveStatusEffect(objectId, se.instanceId, 1 /* Local */);
+      }
+    }
     this.LocalStatusEffectRegistry.delete(objectId);
   }
   RemovePartyObject(objectId) {
+    const registry = this.PartyStatusEffectRegistry.get(objectId);
+    if (registry) {
+      for (const [, se] of registry) {
+        this.RemoveStatusEffect(objectId, se.instanceId, 0 /* Party */);
+      }
+    }
     this.PartyStatusEffectRegistry.delete(objectId);
   }
   RegisterStatusEffect(se) {
-    var registry = this.getStatusEffectRegistryForPlayer(se.targetId, se.type);
-    var effect = registry.get(se.instanceId);
-    if (effect) {
-      this.sendCancelEffectInfo(se, effect);
+    const registry = this.getStatusEffectRegistryForPlayer(se.targetId, se.type);
+    const oldEffect = registry.get(se.instanceId);
+    if (oldEffect) {
+      if (oldEffect.expirationTimer) {
+        clearTimeout(oldEffect.expirationTimer);
+        oldEffect.expirationTimer = void 0;
+      }
     }
     registry.set(se.instanceId, se);
+    this.SetupStatusEffectTimeout(se);
   }
   HasAnyStatusEffect(id, t, statusEffectIds) {
-    var registry = this.getStatusEffectRegistryForPlayer(id, t);
-    for (const effectId of registry) {
+    if (!this.hasStatusEffectRegistryForPlayer(id, t))
+      return false;
+    const registry = this.getStatusEffectRegistryForPlayer(id, t);
+    for (const [, se] of registry) {
       for (const key of statusEffectIds) {
-        if (key == effectId[1].statusEffectId)
+        if (key === se.statusEffectId)
           return true;
       }
     }
     return false;
   }
   HasAnyStatusEffectFromParty(targetId, et, partyId, statusEffectIds) {
-    var registry = this.getStatusEffectRegistryForPlayer(targetId, et);
+    if (!this.hasStatusEffectRegistryForPlayer(targetId, et))
+      return false;
+    const registry = this.getStatusEffectRegistryForPlayer(targetId, et);
     for (const effect of registry) {
       if (statusEffectIds.includes(effect[1].statusEffectId)) {
-        var partyIdOfSource = PartyTracker.getInstance().getPartyIdFromEntityId(effect[1].sourceId);
+        if (this.ValidForWholeRaid(effect[1]))
+          return true;
+        const partyIdOfSource = PartyTracker.getInstance().getPartyIdFromEntityId(effect[1].sourceId);
         if (partyIdOfSource === partyId)
           return true;
       }
@@ -254,25 +283,104 @@ var _StatusTracker = class {
     return false;
   }
   RemoveStatusEffect(targetId, statusEffectId, et) {
-    var registry = this.getStatusEffectRegistryForPlayer(targetId, et);
-    registry.delete(statusEffectId);
+    if (!this.hasStatusEffectRegistryForPlayer(targetId, et))
+      return;
+    const registry = this.getStatusEffectRegistryForPlayer(targetId, et);
+    const statusEffect = registry.get(statusEffectId);
+    if (statusEffect) {
+      clearTimeout(statusEffect.expirationTimer);
+      statusEffect.expirationTimer = void 0;
+      registry.delete(statusEffectId);
+    }
   }
   GetStatusEffects(targetId, et) {
+    if (!this.hasStatusEffectRegistryForPlayer(targetId, et))
+      return [];
     const registry = this.getStatusEffectRegistryForPlayer(targetId, et);
     return [...registry.values()];
   }
   GetStatusEffectsFromParty(targetId, et, partyId) {
+    if (!this.hasStatusEffectRegistryForPlayer(targetId, et))
+      return [];
     const registry = this.getStatusEffectRegistryForPlayer(targetId, et);
-    return [...registry.values()].filter((value, _index, _array) => {
-      return partyId == PartyTracker.getInstance().getPartyIdFromEntityId(value.sourceId);
+    return [...registry.values()].filter((value) => {
+      if (this.ValidForWholeRaid(value))
+        return true;
+      return partyId === PartyTracker.getInstance().getPartyIdFromEntityId(value.sourceId);
     });
   }
   Clear() {
+    let seCountInLocal = 0;
+    for (const [, reg] of this.LocalStatusEffectRegistry) {
+      for (const [, se] of reg) {
+        this.RemoveStatusEffect(se.targetId, se.instanceId, se.type);
+      }
+      seCountInLocal += reg.size;
+    }
+    let seCountInParty = 0;
+    for (const [, reg] of this.PartyStatusEffectRegistry) {
+      for (const [, se] of reg) {
+        this.RemoveStatusEffect(se.targetId, se.instanceId, se.type);
+      }
+      seCountInParty += reg.size;
+    }
+    if (this.trace)
+      console.log("On Clear SE in local", seCountInLocal, "in party", seCountInParty);
     this.LocalStatusEffectRegistry.clear();
     this.PartyStatusEffectRegistry.clear();
   }
+  UpdateDuration(instanceId, targetId, timestamp, et) {
+    const registry = this.getStatusEffectRegistryForPlayer(targetId, et);
+    const se = registry.get(instanceId);
+    if (se) {
+      const durationExtensionMs = timestamp - se.timestamp;
+      if (this.trace)
+        console.log("Clearing timeout for", se.instanceId, "because of duration change");
+      if (se.expirationTimer) {
+        clearTimeout(se.expirationTimer);
+        se.expirationTimer = void 0;
+      }
+      if (se.expireAt) {
+        const timeoutTime = se.expireAt.getTime() + Number(durationExtensionMs);
+        const now = new Date();
+        const timeoutDelay = timeoutTime - now.getTime();
+        if (timeoutDelay > 0) {
+          if (this.trace)
+            console.log("Extending duration by", durationExtensionMs, "ms", "New timeout delay", timeoutDelay, "from", se.expireAt.toISOString(), "to", new Date(timeoutTime).toISOString());
+          se.expirationTimer = setTimeout(this.ExpireStatusEffectByTimeout.bind(this, se), timeoutDelay);
+          se.expireAt = new Date(timeoutTime);
+          se.timestamp = timestamp;
+        } else {
+          se.expireAt = void 0;
+        }
+      }
+    } else if (this.debug) {
+      console.error("Tried to update duration for SE with instanceId", instanceId, " on target", targetId, "but where is no such SE registered");
+    }
+  }
+  ValidForWholeRaid(se) {
+    return (se.buffCategory === 3 /* Battleitem */ || se.buffCategory === 1 /* Bracelet */ || se.buffCategory === 2 /* Etc */) && se.category === 1 /* Debuff */ && se.showType === 1 /* All */;
+  }
+  SetupStatusEffectTimeout(se) {
+    if (se.expirationDelay > 0 && se.expirationDelay < 604800) {
+      const startDate = se.started.getTime() > se.occurTime.getTime() ? se.started : se.occurTime;
+      const expirationDelayInMs = Math.ceil(se.expirationDelay * 1e3);
+      const now = new Date();
+      const timeoutDelay = startDate.getTime() + expirationDelayInMs + _StatusTracker.TIMEOUT_DELAY_MS - now.getTime();
+      se.expireAt = new Date(now.getTime() + timeoutDelay);
+      if (this.trace)
+        console.log("Setting up statuseffect expiration timer for", se.name, se.instanceId, "with delay", timeoutDelay);
+      se.expirationTimer = setTimeout(this.ExpireStatusEffectByTimeout.bind(this, se), timeoutDelay);
+    }
+  }
+  ExpireStatusEffectByTimeout(se) {
+    if (this.debug)
+      console.error("Triggered timeout on", se.name, "with iid", se.instanceId);
+    this.RemoveStatusEffect(se.targetId, se.instanceId, se.type);
+  }
 };
 var StatusTracker = _StatusTracker;
+__publicField(StatusTracker, "TIMEOUT_DELAY_MS", 1e3);
 __publicField(StatusTracker, "instance");
 
 // src/legacy-logger.ts
@@ -317,6 +425,8 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
     this.#wasWipe = false;
     this.#wasKill = false;
     this.#localPlayer = {
+      entityId: 0n,
+      entityType: EntityType.Player,
       name: "You",
       class: 0,
       gearLevel: 0,
@@ -341,11 +451,11 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
       if (!parsed)
         return;
       if (PartyTracker.getInstance().isEntityInParty(parsed.TargetId)) {
-        let p = this.#currentEncounter.entities.get(parsed.TargetId);
-        if (p?.name == this.#localPlayer.name) {
+        const p = this.#currentEncounter.entities.get(parsed.TargetId);
+        if (p?.name === this.#localPlayer.name) {
           StatusTracker.getInstance().RemoveLocalObject(parsed.TargetId);
         } else {
-          let charId = PCIdMapper.getInstance().getCharacterId(parsed.TargetId);
+          const charId = PCIdMapper.getInstance().getCharacterId(parsed.TargetId);
           if (charId)
             StatusTracker.getInstance().RemovePartyObject(charId);
         }
@@ -365,6 +475,8 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
       const parsed = pkt.parsed;
       if (!parsed)
         return;
+      if (this.#localPlayer.entityId !== 0n)
+        PartyTracker.getInstance().changeEntityId(this.#localPlayer.entityId, parsed.PlayerId);
       this.#currentEncounter = new Encounter();
       const player = {
         entityId: parsed.PlayerId,
@@ -374,10 +486,11 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
         gearLevel: this.#localPlayer.gearLevel,
         characterId: this.#localPlayer.characterId
       };
+      this.#localPlayer = player;
       this.#currentEncounter.entities.set(player.entityId, player);
       PCIdMapper.getInstance().clear();
       StatusTracker.getInstance().Clear();
-      if (player.characterId != 0n)
+      if (player.characterId !== 0n)
         PCIdMapper.getInstance().addMapping(player.characterId, player.entityId);
       if (this.#localPlayer && this.#localPlayer.characterId && this.#localPlayer.characterId > 0n)
         PartyTracker.getInstance().completeEntry(this.#localPlayer.characterId, parsed.PlayerId);
@@ -387,12 +500,6 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
       const parsed = pkt.parsed;
       if (!parsed)
         return;
-      this.#localPlayer = {
-        name: parsed.Name,
-        class: parsed.ClassId,
-        gearLevel: this.#u32tof32(parsed.GearLevel),
-        characterId: parsed.CharacterId
-      };
       this.#currentEncounter = new Encounter();
       const player = {
         entityId: parsed.PlayerId,
@@ -402,20 +509,23 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
         gearLevel: this.#u32tof32(parsed.GearLevel),
         characterId: parsed.CharacterId
       };
+      this.#localPlayer = player;
       this.#currentEncounter.entities.set(player.entityId, player);
       PCIdMapper.getInstance().addMapping(player.characterId, player.entityId);
+      PartyTracker.getInstance().setOwnName(parsed.Name);
       PartyTracker.getInstance().completeEntry(player.characterId, parsed.PlayerId);
-      for (let se of parsed.statusEffectDatas) {
-        const val = se.Value ? se.Value.readUInt32LE() : 0;
-        StatusTracker.getInstance().RegisterStatusEffect({
-          instanceId: se.EffectInstanceId,
-          sourceId: se.SourceId,
-          started: new Date(),
-          statusEffectId: se.StatusEffectId,
-          targetId: parsed.PlayerId,
-          type: 1 /* Local */,
-          value: val
-        });
+      const tracker = StatusTracker.getInstance();
+      tracker.RemoveLocalObject(parsed.PlayerId);
+      for (const se of parsed.statusEffectDatas) {
+        const sourceEntity = this.#getSourceEntity(se.SourceId);
+        tracker.RegisterStatusEffect(
+          this.#buildStatusEffect(
+            se,
+            parsed.PlayerId,
+            sourceEntity.entityId,
+            1 /* Local */
+          )
+        );
       }
       if (this.#needEmit) {
         const statsMap = this.#getStatPairMap(pkt.parsed.statPair);
@@ -443,8 +553,21 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
         typeId: parsed.NpcStruct.TypeId
       };
       this.#currentEncounter.entities.set(npc.entityId, npc);
+      const tracker = StatusTracker.getInstance();
+      tracker.RemoveLocalObject(parsed.NpcStruct.ObjectId);
+      for (const se of parsed.NpcStruct.statusEffectDatas) {
+        const sourceEntity = this.#getSourceEntity(se.SourceId);
+        tracker.RegisterStatusEffect(
+          this.#buildStatusEffect(
+            se,
+            parsed.NpcStruct.ObjectId,
+            sourceEntity.entityId,
+            1 /* Local */
+          )
+        );
+      }
       if (this.#needEmit) {
-        const statsMap = this.#getStatPairMap(pkt.parsed.NpcStruct.statPair);
+        const statsMap = this.#getStatPairMap(parsed.NpcStruct.statPair);
         this.#buildLine(
           4 /* NewNpc */,
           npc.entityId,
@@ -464,6 +587,34 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
         name: parsed.NpcData.ObjectId.toString(16),
         ownerId: parsed.OwnerId
       };
+      const tracker = StatusTracker.getInstance();
+      tracker.RemoveLocalObject(parsed.NpcData.ObjectId);
+      for (const se of parsed.NpcData.statusEffectDatas) {
+        const sourceEntity = this.#getSourceEntity(se.SourceId);
+        tracker.RegisterStatusEffect(
+          this.#buildStatusEffect(
+            se,
+            parsed.NpcData.ObjectId,
+            sourceEntity.entityId,
+            1 /* Local */
+          )
+        );
+      }
+      if (this.#needEmit) {
+        const owner = this.#currentEncounter.entities.get(parsed.OwnerId);
+        if (owner && owner.entityType === EntityType.Npc) {
+          summon.name = this.#data.getNpcName(parsed.NpcData.TypeId);
+          const statsMap = this.#getStatPairMap(parsed.NpcData.statPair);
+          this.#buildLine(
+            4 /* NewNpc */,
+            summon.entityId,
+            parsed.NpcData.TypeId,
+            summon.name,
+            Number(statsMap.get(1 /* hp */)) || 0,
+            Number(statsMap.get(27 /* max_hp */)) || 0
+          );
+        }
+      }
       this.#currentEncounter.entities.set(summon.entityId, summon);
     }).on("PKTNewPC", (pkt) => {
       const parsed = pkt.parsed;
@@ -478,19 +629,28 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
         characterId: parsed.PCStruct.CharacterId
       };
       this.#currentEncounter.entities.set(player.entityId, player);
+      const oldEntityId = PCIdMapper.getInstance().getEntityId(player.characterId);
+      if (oldEntityId) {
+        PartyTracker.getInstance().changeEntityId(oldEntityId, parsed.PCStruct.PlayerId);
+      }
       PCIdMapper.getInstance().addMapping(player.characterId, player.entityId);
       PartyTracker.getInstance().completeEntry(player.characterId, player.entityId);
-      for (let se of parsed.PCStruct.statusEffectDatas) {
-        const val = se.Value ? se.Value.readUInt32LE() : 0;
-        StatusTracker.getInstance().RegisterStatusEffect({
-          instanceId: se.EffectInstanceId,
-          sourceId: se.SourceId,
-          started: new Date(),
-          statusEffectId: se.StatusEffectId,
-          targetId: parsed.PCStruct.PlayerId,
-          type: 1 /* Local */,
-          value: val
-        });
+      const tracker = StatusTracker.getInstance();
+      const shouldUsePartyStatusEffects = this.#shouldUsePartyStatusEffect(player.characterId);
+      if (shouldUsePartyStatusEffects) {
+        tracker.RemovePartyObject(parsed.PCStruct.CharacterId);
+      } else {
+        tracker.RemoveLocalObject(parsed.PCStruct.PlayerId);
+      }
+      for (const se of parsed.PCStruct.statusEffectDatas) {
+        tracker.RegisterStatusEffect(
+          this.#buildStatusEffect(
+            se,
+            shouldUsePartyStatusEffects ? player.characterId : player.entityId,
+            se.SourceId,
+            shouldUsePartyStatusEffects ? 0 /* Party */ : 1 /* Local */
+          )
+        );
       }
       if (this.#needEmit) {
         const statsMap = this.#getStatPairMap(pkt.parsed.PCStruct.statPair);
@@ -525,13 +685,46 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
       const parsed = pkt.parsed;
       if (!parsed)
         return;
-      if (parsed.MemberDatas.length == 1 && parsed.MemberDatas[0]?.Name === this.#localPlayer.name) {
+      if (parsed.MemberDatas.length === 1 && parsed.MemberDatas[0]?.Name === this.#localPlayer.name) {
         PartyTracker.getInstance().remove(parsed.PartyInstanceId, parsed.MemberDatas[0].Name);
         return;
       }
       PartyTracker.getInstance().removePartyMappings(parsed.PartyInstanceId);
       for (const pm of parsed.MemberDatas) {
-        PartyTracker.getInstance().add(pm.CharacterId, void 0, parsed.PartyInstanceId, parsed.RaidInstanceId);
+        if (pm.CharacterId === this.#localPlayer.characterId) {
+          PartyTracker.getInstance().setOwnName(pm.Name);
+        }
+        const entityId = PCIdMapper.getInstance().getEntityId(pm.CharacterId);
+        if (entityId) {
+          const ent = this.#currentEncounter.entities.get(entityId);
+          if (ent && ent.entityType === EntityType.Player && ent.name !== pm.Name) {
+            const p = ent;
+            p.gearLevel = this.#u32tof32(pm.GearLevel);
+            p.name = pm.Name;
+            p.class = pm.ClassId;
+            if (this.#needEmit) {
+              this.#buildLine(
+                3 /* NewPC */,
+                p.entityId,
+                p.name,
+                p.class,
+                this.#data.getClassName(p.class),
+                pm.CharacterLevel,
+                p.gearLevel,
+                Number(pm.CurHp),
+                Number(pm.MaxHp),
+                p.characterId
+              );
+            }
+          }
+        }
+        PartyTracker.getInstance().add(
+          parsed.RaidInstanceId,
+          parsed.PartyInstanceId,
+          pm.CharacterId,
+          entityId,
+          pm.Name
+        );
       }
     }).on("PKTPartyLeaveResult", (pkt) => {
       const parsed = pkt.parsed;
@@ -542,20 +735,13 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
       const parsed = pkt.parsed;
       if (!parsed)
         return;
+      const tracker = StatusTracker.getInstance();
       for (const effect of parsed.statusEffectDatas) {
-        const sourceId = parsed.PlayerIdOnRefresh != 0n ? parsed.PlayerIdOnRefresh : effect.SourceId;
+        const sourceId = parsed.PlayerIdOnRefresh !== 0n ? parsed.PlayerIdOnRefresh : effect.SourceId;
         const sourceEnt = this.#getSourceEntity(sourceId);
-        const val = effect.Value ? effect.Value.readUInt32LE() : 0;
-        var se = {
-          instanceId: effect.EffectInstanceId,
-          sourceId: sourceEnt.entityId,
-          started: new Date(),
-          statusEffectId: effect.StatusEffectId,
-          targetId: parsed.CharacterId,
-          type: 0 /* Party */,
-          value: val
-        };
-        StatusTracker.getInstance().RegisterStatusEffect(se);
+        tracker.RegisterStatusEffect(
+          this.#buildStatusEffect(effect, parsed.CharacterId, sourceEnt.entityId, 0 /* Party */)
+        );
       }
     }).on("PKTPartyStatusEffectRemoveNotify", (pkt) => {
       const parsed = pkt.parsed;
@@ -567,7 +753,7 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
       const parsed = pkt.parsed;
       if (!parsed)
         return;
-      PartyTracker.getInstance().add(parsed.CharacterId, void 0, parsed.PartyInstanceId, parsed.RaidInstanceId);
+      PartyTracker.getInstance().add(parsed.RaidInstanceId, parsed.PartyInstanceId, parsed.CharacterId);
     }).on("PKTRaidBossKillNotify", (pkt) => {
       if (this.#needEmit)
         this.#buildLine(2 /* PhaseTransition */, 1);
@@ -578,7 +764,7 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
       const parsed = pkt.parsed;
       if (!parsed)
         return;
-      for (let upo of parsed.unpublishedObjects)
+      for (const upo of parsed.unpublishedObjects)
         StatusTracker.getInstance().RemoveLocalObject(upo.ObjectId);
     }).on("PKTSkillDamageAbnormalMoveNotify", (pkt) => {
       if (this.#needEmit) {
@@ -593,41 +779,8 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
             return;
           if (parsedDmg.SkillId === 0 && parsedDmg.SkillEffectId === 0 && event.skillDamageEvent.Modifier & (4 /* dot */ | 8 /* dot_critical */))
             skillName = "Bleed";
-          var statusEffectsOnTarget = [];
-          var statusEffectsOnSource = [];
-          if (sourceEntity.entityType === EntityType.Player) {
-            const p = sourceEntity;
-            const isLocalPlayer = p.name == this.#localPlayer.name;
-            var isInParty = PartyTracker.getInstance().isCharacterInParty(p.characterId);
-            if (isInParty) {
-              const partyId = PartyTracker.getInstance().getPartyIdFromCharacterId(p.characterId);
-              if (partyId) {
-                const effect = StatusTracker.getInstance().GetStatusEffects(
-                  isLocalPlayer ? p.entityId : p.characterId,
-                  isLocalPlayer ? 1 /* Local */ : 0 /* Party */
-                );
-                for (var ef of effect)
-                  statusEffectsOnSource.push([ef.statusEffectId, ef.sourceId]);
-                const tEffects = StatusTracker.getInstance().GetStatusEffectsFromParty(
-                  event.skillDamageEvent.TargetId,
-                  1 /* Local */,
-                  partyId
-                );
-                for (var ef of tEffects)
-                  statusEffectsOnTarget.push([ef.statusEffectId, ef.sourceId]);
-              }
-            } else if (isLocalPlayer) {
-              const effect = StatusTracker.getInstance().GetStatusEffects(p.entityId, 1 /* Local */);
-              for (var ef of effect)
-                statusEffectsOnSource.push([ef.statusEffectId, ef.sourceId]);
-              const tEffects = StatusTracker.getInstance().GetStatusEffects(
-                event.skillDamageEvent.TargetId,
-                1 /* Local */
-              );
-              for (var ef of tEffects)
-                statusEffectsOnTarget.push([ef.statusEffectId, ef.sourceId]);
-            }
-          }
+          const targetEntity = this.#currentEncounter.entities.get(event.skillDamageEvent.TargetId);
+          const [statusEffectsOnSource, statusEffectsOnTarget] = this.#getStatusEffects(sourceEntity, targetEntity);
           let skillEffectId = parsedDmg.SkillEffectId;
           let skillEffect;
           if (this.#data.isBattleItem(skillEffectId, "attack")) {
@@ -672,38 +825,8 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
             return;
           if (parsedDmg.SkillId === 0 && parsedDmg.SkillEffectId === 0 && event.Modifier & (4 /* dot */ | 8 /* dot_critical */))
             skillName = "Bleed";
-          var statusEffectsOnTarget = [];
-          var statusEffectsOnSource = [];
-          if (sourceEntity.entityType === EntityType.Player) {
-            const p = sourceEntity;
-            const isLocalPlayer = p.name == this.#localPlayer.name;
-            var isInParty = PartyTracker.getInstance().isCharacterInParty(p.characterId);
-            if (isInParty) {
-              const partyId = PartyTracker.getInstance().getPartyIdFromCharacterId(p.characterId);
-              if (partyId) {
-                const effect = StatusTracker.getInstance().GetStatusEffects(
-                  isLocalPlayer ? p.entityId : p.characterId,
-                  isLocalPlayer ? 1 /* Local */ : 0 /* Party */
-                );
-                for (var ef of effect)
-                  statusEffectsOnSource.push([ef.statusEffectId, ef.sourceId]);
-                const tEffects = StatusTracker.getInstance().GetStatusEffectsFromParty(
-                  event.TargetId,
-                  1 /* Local */,
-                  partyId
-                );
-                for (var ef of tEffects)
-                  statusEffectsOnTarget.push([ef.statusEffectId, ef.sourceId]);
-              }
-            } else if (isLocalPlayer) {
-              const effect = StatusTracker.getInstance().GetStatusEffects(p.entityId, 1 /* Local */);
-              for (var ef of effect)
-                statusEffectsOnSource.push([ef.statusEffectId, ef.sourceId]);
-              const tEffects = StatusTracker.getInstance().GetStatusEffects(event.TargetId, 1 /* Local */);
-              for (var ef of tEffects)
-                statusEffectsOnTarget.push([ef.statusEffectId, ef.sourceId]);
-            }
-          }
+          const targetEntity = this.#currentEncounter.entities.get(event.TargetId);
+          const [statusEffectsOnSource, statusEffectsOnTarget] = this.#getStatusEffects(sourceEntity, targetEntity);
           let skillEffectId = parsedDmg.SkillEffectId;
           let skillEffect2;
           if (this.#data.isBattleItem(skillEffectId, "attack")) {
@@ -772,18 +895,15 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
       const parsed = pkt.parsed;
       if (!parsed)
         return;
-      const val = parsed.statusEffectData.Value ? parsed.statusEffectData.Value.readUInt32LE() : 0;
       const sourceEnt = this.#getSourceEntity(parsed.statusEffectData.SourceId);
-      var se = {
-        instanceId: parsed.statusEffectData.EffectInstanceId,
-        sourceId: sourceEnt.entityId,
-        started: new Date(),
-        statusEffectId: parsed.statusEffectData.StatusEffectId,
-        targetId: parsed.ObjectId,
-        type: 1 /* Local */,
-        value: val
-      };
-      StatusTracker.getInstance().RegisterStatusEffect(se);
+      StatusTracker.getInstance().RegisterStatusEffect(
+        this.#buildStatusEffect(
+          parsed.statusEffectData,
+          parsed.ObjectId,
+          sourceEnt.entityId,
+          1 /* Local */
+        )
+      );
     }).on("PKTStatusEffectRemoveNotify", (pkt) => {
       const parsed = pkt.parsed;
       if (!parsed)
@@ -818,6 +938,23 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
           this.#wasWipe = true;
           break;
       }
+    }).on("PKTMigrationExecute", (pkt) => {
+      if (this.#localPlayer.characterId !== 0n)
+        return;
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      this.#localPlayer.characterId = parsed.Account_CharacterId1 < parsed.Account_CharacterId2 ? parsed.Account_CharacterId1 : parsed.Account_CharacterId2;
+    }).on("PKTZoneObjectUnpublishNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      StatusTracker.getInstance().RemoveLocalObject(parsed.ObjectId);
+    }).on("PKTStatusEffectDurationNotify", (pkt) => {
+      const parsed = pkt.parsed;
+      if (!parsed)
+        return;
+      StatusTracker.getInstance().UpdateDuration(parsed.EffectInstanceId, parsed.TargetId, parsed.ExpirationTick, 1 /* Local */);
     });
   }
   #buildLine(id, ...args) {
@@ -907,6 +1044,111 @@ var LegacyLogger = class extends import_tiny_typed_emitter.TypedEmitter {
     const buf = Buffer.alloc(4);
     buf.writeUInt32LE(v);
     return Math.round(buf.readFloatLE() * 100) / 100;
+  }
+  #shouldUsePartyStatusEffectForEntity(entity) {
+    if (entity.entityType !== EntityType.Player)
+      return false;
+    const player = entity;
+    return this.#shouldUsePartyStatusEffect(player.characterId);
+  }
+  #shouldUsePartyStatusEffect(characterId) {
+    const localPlayerIsInParty = PartyTracker.getInstance().isCharacterInParty(this.#localPlayer.characterId);
+    const affectedPlayerIsInParty = PartyTracker.getInstance().isCharacterInParty(characterId);
+    if (localPlayerIsInParty) {
+      if (!affectedPlayerIsInParty || characterId === this.#localPlayer.characterId) {
+        return false;
+      }
+      const localPlayerPartyId = PartyTracker.getInstance().getPartyIdFromCharacterId(this.#localPlayer.characterId);
+      const affectedPlayerPartyId = PartyTracker.getInstance().getPartyIdFromCharacterId(characterId);
+      if (localPlayerPartyId === affectedPlayerPartyId) {
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+  #isEntityInParty(entity) {
+    if (entity.entityType !== EntityType.Player)
+      return false;
+    const player = entity;
+    return PartyTracker.getInstance().isCharacterInParty(player.characterId);
+  }
+  #buildStatusEffect(se, targetId, sourceId, targetType) {
+    const val = se.Value ? se.Value.readUInt32LE() : 0;
+    let statusEffectCategory = 0 /* Other */;
+    let statusEffectBuffCategory = 0 /* Other */;
+    let showType = 0 /* Other */;
+    let seName = "Unknown";
+    const effectInfo = this.#data.skillBuff.get(se.StatusEffectId);
+    if (effectInfo) {
+      seName = effectInfo.name;
+      switch (effectInfo.category) {
+        case "debuff":
+          statusEffectCategory = 1 /* Debuff */;
+          break;
+      }
+      switch (effectInfo.buffcategory) {
+        case "bracelet":
+          statusEffectBuffCategory = 1 /* Bracelet */;
+          break;
+        case "etc":
+          statusEffectBuffCategory = 2 /* Etc */;
+          break;
+        case "battleitem":
+          statusEffectBuffCategory = 3 /* Battleitem */;
+          break;
+      }
+      switch (effectInfo.iconshowtype) {
+        case "all":
+          showType = 1 /* All */;
+          break;
+      }
+    }
+    return {
+      instanceId: se.EffectInstanceId,
+      sourceId,
+      started: new Date(),
+      statusEffectId: se.StatusEffectId,
+      targetId,
+      type: targetType,
+      value: val,
+      buffCategory: statusEffectBuffCategory,
+      category: statusEffectCategory,
+      showType,
+      expirationDelay: se.TotalTime,
+      expirationTimer: void 0,
+      timestamp: se.EndTick,
+      expireAt: void 0,
+      occurTime: se.OccurTime,
+      name: seName
+    };
+  }
+  #getStatusEffects(sourceEntity, targetEntity) {
+    const statusEffectsOnTarget = [];
+    const statusEffectsOnSource = [];
+    const shouldUsePartyBuffForSource = this.#shouldUsePartyStatusEffectForEntity(sourceEntity);
+    const sourceEffects = StatusTracker.getInstance().GetStatusEffects(
+      shouldUsePartyBuffForSource ? sourceEntity.characterId : sourceEntity.entityId,
+      shouldUsePartyBuffForSource ? 0 /* Party */ : 1 /* Local */
+    );
+    for (const se of sourceEffects)
+      statusEffectsOnSource.push([se.statusEffectId, se.sourceId]);
+    if (targetEntity) {
+      const shouldUsePartyBuffForTarget = this.#shouldUsePartyStatusEffectForEntity(targetEntity);
+      const sourceIsInParty = this.#isEntityInParty(sourceEntity);
+      const sourcePartyId = sourceIsInParty ? PartyTracker.getInstance().getPartyIdFromEntityId(sourceEntity.entityId) : void 0;
+      const targetEffects = sourceIsInParty && sourcePartyId ? StatusTracker.getInstance().GetStatusEffectsFromParty(
+        shouldUsePartyBuffForTarget ? targetEntity.characterId : targetEntity.entityId,
+        shouldUsePartyBuffForTarget ? 0 /* Party */ : 1 /* Local */,
+        sourcePartyId
+      ) : StatusTracker.getInstance().GetStatusEffects(
+        shouldUsePartyBuffForTarget ? targetEntity.characterId : targetEntity.entityId,
+        shouldUsePartyBuffForTarget ? 0 /* Party */ : 1 /* Local */
+      );
+      for (const se of targetEffects)
+        statusEffectsOnTarget.push([se.statusEffectId, se.sourceId]);
+    }
+    return [statusEffectsOnSource, statusEffectsOnTarget];
   }
 };
 var Encounter = class {

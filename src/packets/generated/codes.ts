@@ -35,8 +35,13 @@ export { opcode as PKTSkillStartNotify } from "./definitions/PKTSkillStartNotify
 export { opcode as PKTStatChangeOriginNotify } from "./definitions/PKTStatChangeOriginNotify";
 export { opcode as PKTStatusEffectAddNotify } from "./definitions/PKTStatusEffectAddNotify";
 export { opcode as PKTStatusEffectRemoveNotify } from "./definitions/PKTStatusEffectRemoveNotify";
+export { opcode as PKTStatusEffectDurationNotify } from "./definitions/PKTStatusEffectDurationNotify";
 export { opcode as PKTStatusEffectSyncDataNotify } from "./definitions/PKTStatusEffectSyncDataNotify";
 export { opcode as PKTTriggerBossBattleStatus } from "./definitions/PKTTriggerBossBattleStatus";
 export { opcode as PKTTriggerFinishNotify } from "./definitions/PKTTriggerFinishNotify";
 export { opcode as PKTTriggerStartNotify } from "./definitions/PKTTriggerStartNotify";
 export { opcode as PKTTroopMemberUpdateMinNotify } from "./definitions/PKTTroopMemberUpdateMinNotify";
+export { opcode as PKTIdentityGaugeChangeNotify } from "./definitions/PKTIdentityGaugeChangeNotify";
+export { opcode as PKTZoneObjectUnpublishNotify } from "./definitions/PKTZoneObjectUnpublishNotify";
+export { opcode as PKTZoneStatusEffectAddNotify } from "./definitions/PKTZoneStatusEffectAddNotify";
+export { opcode as PKTZoneStatusEffectRemoveNotify } from "./definitions/PKTZoneStatusEffectRemoveNotify";
