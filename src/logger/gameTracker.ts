@@ -9,6 +9,7 @@ import { EntityTracker, EntityType } from "./entityTracker";
 import type { LogEvent } from "./logEvent";
 import type { ParserEvent } from "./parser";
 import type { StatusTracker } from "./statustracker";
+import type { PartyTracker } from "./partytracker";
 
 const defaultOptions: GameTrackerOptions = {
   isLive: true,
@@ -22,6 +23,7 @@ export class GameTracker extends TypedEmitter<ParserEvent> {
 
   #entityTracker: EntityTracker;
   #statusTracker: StatusTracker;
+  #partyTracker: PartyTracker;
   #data: MeterData;
   options: GameTrackerOptions;
 
@@ -34,12 +36,14 @@ export class GameTracker extends TypedEmitter<ParserEvent> {
   constructor(
     entityTracker: EntityTracker,
     statusTracker: StatusTracker,
+    partyTracker: PartyTracker,
     data: MeterData,
     options: Partial<GameTrackerOptions>
   ) {
     super();
     this.#entityTracker = entityTracker;
     this.#statusTracker = statusTracker;
+    this.#partyTracker = partyTracker;
     this.#data = data;
     this.options = { ...defaultOptions, ...options };
 
@@ -127,7 +131,9 @@ export class GameTracker extends TypedEmitter<ParserEvent> {
   }
   resetState(curTime: number) {
     this.cancelReset();
-    this.resetBreakdowns();
+
+    this.applyBreakdowns(this.#game.entities);
+    this.emit("reset-state", this.#game); // Uploader needs the pre-reset state
 
     this.#game = {
       startedOn: +curTime,
@@ -155,7 +161,6 @@ export class GameTracker extends TypedEmitter<ParserEvent> {
         totalEffectiveShieldingDone: 0,
       },
     };
-    this.emit("reset-state", this.#game);
   }
   cancelReset() {
     if (this.resetTimer) clearTimeout(this.resetTimer);
@@ -574,6 +579,11 @@ export class GameTracker extends TypedEmitter<ParserEvent> {
     const updateTime = { lastUpdate: +time };
     let entityState = this.#game.entities.get(entity.name);
     let extraInfo: Partial<EntityState> = {};
+
+    const partyId = this.#partyTracker.isEntityInParty(entity.entityId)
+      ? this.#partyTracker.getPartyIdFromEntityId(entity.entityId)?.toString(16)
+      : undefined;
+
     if (
       !entityState ||
       (entity.entityType === EntityType.Player && entityState.isPlayer !== true) // We guessed isPlayer
@@ -589,6 +599,7 @@ export class GameTracker extends TypedEmitter<ParserEvent> {
         extraInfo = { npcId: esther.typeId, isBoss: esther.isBoss, isEsther: true, icon: esther.icon };
       }
     }
+    if (partyId) extraInfo.partyId = partyId;
     if (entityState) {
       Object.assign(entityState, values, updateTime, extraInfo);
     } else {

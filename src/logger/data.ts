@@ -82,6 +82,7 @@ export interface EntityState {
   npcId: number;
   name: string;
   classId: number;
+  partyId?: string;
   isBoss: boolean;
   isPlayer: boolean;
   isEsther?: boolean;
