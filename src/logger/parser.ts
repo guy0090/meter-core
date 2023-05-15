@@ -231,6 +231,12 @@ export class Parser extends TypedEmitter<ParserEvent> {
       .on("PassiveStatusEffectRemoveNotify", (pkt) => {})
       .on("RaidBossKillNotify", (pkt) => {
         this.#gameTracker.onPhaseTransition(1, pkt.time);
+
+        setTimeout(() => {
+          // Wait until the next tick to ensure state was fully processed
+          const state = this.#gameTracker.getStateWithBreakdowns();
+          this.emit("raid-boss-killed", { wipe: this.#wasWipe, state  })
+        }, 100);
       })
       .on("RaidResult", (pkt) => {
         this.#gameTracker.onPhaseTransition(0, pkt.time);
@@ -450,4 +456,5 @@ export interface ParserEvent {
   message: (msg: string) => void;
   "reset-state": (game: GameState) => void;
   "state-change": (game: GameState) => void;
+  "raid-boss-killed": (data: { wipe: boolean, state: GameState }) => void;
 }

@@ -22,6 +22,10 @@ interface ParserEvent {
     message: (msg: string) => void;
     "reset-state": (game: GameState) => void;
     "state-change": (game: GameState) => void;
+    "raid-boss-killed": (data: {
+        wipe: boolean;
+        state: GameState;
+    }) => void;
 }
 
 export { Parser, ParserEvent };

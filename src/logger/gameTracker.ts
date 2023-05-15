@@ -131,10 +131,6 @@ export class GameTracker extends TypedEmitter<ParserEvent> {
   }
   resetState(curTime: number) {
     this.cancelReset();
-
-    this.applyBreakdowns(this.#game.entities);
-    this.emit("reset-state", this.#game); // Uploader needs the pre-reset state
-
     this.#game = {
       startedOn: +curTime,
       lastCombatPacket: +curTime,
@@ -161,6 +157,8 @@ export class GameTracker extends TypedEmitter<ParserEvent> {
         totalEffectiveShieldingDone: 0,
       },
     };
+    this.resetBreakdowns();
+    this.emit("reset-state", this.#game);
   }
   cancelReset() {
     if (this.resetTimer) clearTimeout(this.resetTimer);
@@ -719,6 +717,12 @@ export class GameTracker extends TypedEmitter<ParserEvent> {
     });
 
     clone.localPlayer = this.#entityTracker.localPlayer.name;
+    return clone;
+  }
+
+  getStateWithBreakdowns(): GameState {
+    const clone: GameState = structuredClone(this.#game);
+    this.applyBreakdowns(clone.entities);
     return clone;
   }
 
