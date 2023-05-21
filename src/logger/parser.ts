@@ -236,7 +236,7 @@ export class Parser extends TypedEmitter<ParserEvent> {
           // Wait until the next tick to ensure state was fully processed
           const state = this.#gameTracker.getStateWithBreakdowns();
           this.emit("raid-boss-killed", { wipe: this.#wasWipe, state  })
-        }, 100);
+        }, 200);
       })
       .on("RaidResult", (pkt) => {
         this.#gameTracker.onPhaseTransition(0, pkt.time);
@@ -343,6 +343,12 @@ export class Parser extends TypedEmitter<ParserEvent> {
       .on("StatusEffectSyncDataNotify", (pkt) => {})
       .on("TriggerBossBattleStatus", (pkt) => {
         this.#gameTracker.onPhaseTransition(2, pkt.time);
+
+        setTimeout(() => {
+          // Wait until the next tick to ensure state was fully processed
+          const state = this.#gameTracker.getStateWithBreakdowns();
+          this.emit("raid-boss-killed", { wipe: this.#wasWipe, state  })
+        }, 200);
       })
       .on("TriggerFinishNotify", (pkt) => {})
       .on("TriggerStartNotify", (pkt) => {
